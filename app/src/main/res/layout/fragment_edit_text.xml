@@ -1,0 +1,56 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.turing.sandbox.EditTextFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/til1"
+            android:layout_width="match_parent"
+            android:layout_marginTop="5dp"
+            android:layout_height="wrap_content"
+            >
+
+            <EditText
+                android:id="@+id/et1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="E-mail o Usuario"
+                android:textSize="15sp"
+                android:singleLine="true"
+                />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/til2"
+            android:layout_width="match_parent"
+            android:layout_marginTop="5dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/til1"
+            app:hintTextAppearance="@style/AppTheme.FloatingLabel"
+            android:textColorHint="#0F4F0F"
+            >
+
+            <EditText
+                android:id="@+id/et2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="E-mail o Usuario"
+                android:textColor="#aaaaaa"
+                android:textColorHint="#FFF000"
+                android:textSize="15sp"
+                android:singleLine="true"
+                android:theme="@style/EditText"
+                />
+
+        </android.support.design.widget.TextInputLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>

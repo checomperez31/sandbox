@@ -1,0 +1,22 @@
+<resources>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--Etiqueta flotante-->
+    <style name="AppTheme.FloatingLabel" parent="@android:style/TextAppearance">
+        <item name="android:textColor">#FF0000</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <!--Campo de texto-->
+    <style name="EditText" parent="AppTheme">
+        <!-- cursor y línea normal-->
+        <item name="colorControlNormal">#000000</item>
+        <!-- cursor y línea con foco-->
+        <item name="colorControlActivated">#00FF00</item>
+    </style>
+</resources>
