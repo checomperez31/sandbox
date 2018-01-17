@@ -51,6 +51,17 @@ public class Comunicaciones {
                     public void onResponse(JSONObject response)
                     {
                         Log.i("JSON", response.toString());
+                        try {
+                            if (response.has("id_token")) {
+                                VolleySingleton.getInstance(context).setToken(response.getString("id_token"));
+                            }
+                            else{
+
+                            }
+                        }
+                        catch(JSONException jsone){
+
+                        }
                     }
                 },
                 new Response.ErrorListener()

@@ -86,17 +86,28 @@ public class RESTFragment extends Fragment {
         btnRest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("username", "admin");
-                params.put("password", "admin");
-                JSONObject JsonParams = new JSONObject(params);
-                Log.i("JSON", params + " " + JsonParams.toString());
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-type", "application/json");
-                Comunicaciones com = new Comunicaciones(getContext());
-                com.getSomething("http://10.17.22.96:8080/api/authenticate",
-                        new JSONObject(params)
-                );
+                if(VolleySingleton.getInstance(getContext()).getToken() == null){
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("username", "admin");
+                    params.put("password", "admin");
+                    JSONObject JsonParams = new JSONObject(params);
+                    Log.i("JSON", params + " " + JsonParams.toString());
+                    Map<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-type", "application/json");
+                    Comunicaciones com = new Comunicaciones(getContext());
+                    com.getSomething("http://10.17.22.96:8080/api/authenticate",
+                            new JSONObject(params)
+                    );
+                }else{
+                    Map<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-type", "application/json");
+                    headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(getContext()).getToken());
+                    Comunicaciones com = new Comunicaciones(getContext());
+                    com.getSomething("http://10.17.22.96:8080/api/autors",
+                            null
+                    );
+                }
+
             }
         });
     }

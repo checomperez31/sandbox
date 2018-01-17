@@ -16,6 +16,7 @@ public class VolleySingleton {
     private static VolleySingleton singleton;
     private RequestQueue requestQueue;
     private static Context context;
+    private String token;
 
     private VolleySingleton(Context context)
     {
@@ -60,4 +61,11 @@ public class VolleySingleton {
         getRequestQueue().add(req);
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }
