@@ -19,11 +19,13 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         BlankFragment.OnFragmentInteractionListener,
         EditTextFragment.OnFragmentInteractionListener,
-        RESTFragment.OnFragmentInteractionListener{
+        RESTFragment.OnFragmentInteractionListener,
+        Peliculas.OnFragmentInteractionListener{
 
     BlankFragment blankFragment;
     EditTextFragment editTextFragment;
     RESTFragment restFragment;
+    Peliculas fragmentPeliculas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity
         blankFragment = new BlankFragment();
         editTextFragment = new EditTextFragment();
         restFragment = new RESTFragment();
+        fragmentPeliculas = new Peliculas();
 
         getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, blankFragment).commit();
     }
@@ -104,7 +107,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
             transaction.replace(R.id.FragmentContent, restFragment, "GET");
         } else if (id == R.id.nav_manage) {
-
+            transaction.replace(R.id.FragmentContent, fragmentPeliculas, "PELICULA");
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {

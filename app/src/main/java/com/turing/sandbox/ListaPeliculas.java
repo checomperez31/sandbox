@@ -3,32 +3,21 @@ package com.turing.sandbox;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link RESTFragment.OnFragmentInteractionListener} interface
+ * {@link ListaPeliculas.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link RESTFragment#newInstance} factory method to
+ * Use the {@link ListaPeliculas#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RESTFragment extends Fragment {
-    Button btnRest;
-    TextView response;
+public class ListaPeliculas extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -40,7 +29,7 @@ public class RESTFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public RESTFragment() {
+    public ListaPeliculas() {
         // Required empty public constructor
     }
 
@@ -50,11 +39,11 @@ public class RESTFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment RESTFragment.
+     * @return A new instance of fragment ListaPeliculas.
      */
     // TODO: Rename and change types and number of parameters
-    public static RESTFragment newInstance(String param1, String param2) {
-        RESTFragment fragment = new RESTFragment();
+    public static ListaPeliculas newInstance(String param1, String param2) {
+        ListaPeliculas fragment = new ListaPeliculas();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -75,30 +64,7 @@ public class RESTFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_rest, container, false);
-        btnRest = view.findViewById(R.id.btnRest);
-        response = view.findViewById(R.id.text_view_response);
-        return  view;
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        btnRest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("username", "admin");
-                params.put("password", "admin");
-                JSONObject JsonParams = new JSONObject(params);
-                Log.i("JSON", params + " " + JsonParams.toString());
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-type", "application/json");
-                Comunicaciones com = new Comunicaciones(getContext());
-                com.getSomething("http://10.17.22.96:8080/api/authenticate",
-                        new JSONObject(params)
-                );
-            }
-        });
+        return inflater.inflate(R.layout.fragment_lista_peliculas, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

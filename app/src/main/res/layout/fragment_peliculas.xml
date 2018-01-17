@@ -1,0 +1,53 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.turing.sandbox.Peliculas">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/fragment_pelicula_titulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Peliculas"
+            android:layout_centerHorizontal="true"
+            android:textSize="18sp"
+            android:textColor="@android:color/black"/>
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/fragment_pelicula_tilnombre"
+            android:layout_below="@+id/fragment_pelicula_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre">
+
+            <EditText
+                android:id="@+id/fragment_pelicula_nombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/fragment_pelicula_tilanio"
+            android:layout_below="@+id/fragment_pelicula_tilnombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Anio">
+
+            <EditText
+                android:id="@+id/fragment_pelicula_anio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/fragment_pelicula_btnguardar"
+            android:layout_below="@+id/fragment_pelicula_tilanio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar"/>
+    </RelativeLayout>
+
+</FrameLayout>

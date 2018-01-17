@@ -13,6 +13,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
@@ -36,30 +37,20 @@ public class Comunicaciones {
         this.context = context;
     }
 
-    public void getSomething(String url, Map<String, String> paramsGetData)
+    public void getSomething(String url, JSONObject params)
     {
         final Gson gson = new Gson();
-        final Map<String, String> paramsMap = paramsGetData;
-        StringRequest stringRequest = new StringRequest(
-                Request.Method.GET,
+        //final Map<String, String> paramsMap = paramsGetData;
+        //final Map<String, String> headersMap = headers;
+        JsonObjectRequest stringRequest = new JsonObjectRequest(
                 url,
-                new Response.Listener<String>()
+                params,
+                new Response.Listener<JSONObject>()
                 {
                     @Override
-                    public void onResponse(String response)
+                    public void onResponse(JSONObject response)
                     {
-                        Log.i("JSON", response);
-                        try
-                        {
-                            JSONObject jsonObject = new JSONObject(response);
-                            Log.i("response", "Respuesta: " + response);
-                            //String state = jsonObject.getString("state");
-
-                        }
-                        catch(JSONException jsone)
-                        {
-                            Log.i("Error", "Error: " + jsone.getMessage());
-                        }
+                        Log.i("JSON", response.toString());
                     }
                 },
                 new Response.ErrorListener()
@@ -67,23 +58,18 @@ public class Comunicaciones {
                     @Override
                     public void onErrorResponse(VolleyError error)
                     {
-                        Log.i("Error", "Error");
+                        Log.i("Error", "Error: " + error.getMessage());
                     }
                 }
         )
         {
-            @Override
+            /*@Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String>  params = new HashMap<String, String>();
-                //params.put("X-Mashape-Key", "ZqWMJ3kJJZmshZKNoQNcZ0zkhiLip1YPE0Fjsn73dfYjpxAGiG");
-                params.put("Content-Type", "application/json; charset=UTF-8");
-                params.put("Authorization", "Token token=\"MDowN2YxODQ4OC1mYTdmLTExZTctODU1Yy0zYjRhNWFiMmQ5YWM6MGZWT0dBb1A5dVA3WVpOQTVhYlFlZGtsZVc4OTFsQkhVNmYw\"");
-                //params.put("Username", "x-access-key");
-                //params.put("Password", "MDowN2YxODQ4OC1mYTdmLTExZTctODU1Yy0zYjRhNWFiMmQ5YWM6MGZWT0dBb1A5dVA3WVpOQTVhYlFlZGtsZVc4OTFsQkhVNmYw");
+                Map<String, String> params = headersMap;
                 return params;
             }
 
-            /*@Override
+            @Override
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = paramsMap;
@@ -107,6 +93,7 @@ public class Comunicaciones {
 
             }
         });
-        requestQueue.add(stringRequest);
+        Log.i("RRR", stringRequest + "");
+        VolleySingleton.getInstance(context).getRequestQueue().add(stringRequest);
     }
 }
