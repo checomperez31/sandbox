@@ -2,12 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.turing.sandbox.ListaPeliculas">
+    tools:context="com.turing.sandbox.ListaAutores">
 
-    <TextView
-        android:id="@+id/fragment_lpeliculas_tv"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_autores"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="prueba"/>
+        android:layout_height="match_parent">
+
+    </android.support.v7.widget.RecyclerView>
 
 </FrameLayout>

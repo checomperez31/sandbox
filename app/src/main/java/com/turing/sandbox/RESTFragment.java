@@ -95,16 +95,8 @@ public class RESTFragment extends Fragment {
                     Map<String, String> headers = new HashMap<String, String>();
                     headers.put("Content-type", "application/json");
                     Comunicaciones com = new Comunicaciones(getContext());
-                    com.getSomething("http://10.17.22.96:8080/api/authenticate",
+                    com.getSomethingJSON(Constants.url2 + Constants.autenticate,
                             new JSONObject(params)
-                    );
-                }else{
-                    Map<String, String> headers = new HashMap<String, String>();
-                    headers.put("Content-type", "application/json");
-                    headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(getContext()).getToken());
-                    Comunicaciones com = new Comunicaciones(getContext());
-                    com.getSomething("http://10.17.22.96:8080/api/autors",
-                            null
                     );
                 }
 

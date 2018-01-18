@@ -1,5 +1,6 @@
 package com.turing.sandbox;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -20,12 +21,12 @@ public class MainActivity extends AppCompatActivity
         BlankFragment.OnFragmentInteractionListener,
         EditTextFragment.OnFragmentInteractionListener,
         RESTFragment.OnFragmentInteractionListener,
-        Peliculas.OnFragmentInteractionListener{
+        ListaAutores.OnFragmentInteractionListener{
 
     BlankFragment blankFragment;
     EditTextFragment editTextFragment;
     RESTFragment restFragment;
-    Peliculas fragmentPeliculas;
+    ListaAutores fragmentAutores;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,36 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        /*
+        *Manejo de sesiones
+        UserSessionManager session;
+        session = new UserSessionManager(getApplicationContext());
+        if(session.isUserLoggedIn()){
+            Intent i = new Intent(getApplicationContext(),MainDenarius.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+            finish();
+        }
+
+
+        //Manejo de Session
+        session = new UserSessionManager(getApplicationContext());
+
+        if(!session.isUserLoggedIn()) finish();
+
+
+        UserSessionManager session;
+                                            session = new UserSessionManager(context);
+
+                                            session.createUserLoginSession(usuario.getIdUsuario(), usuario.getUsuario(), usuario.getNombre(), usuario.getCorreo(), usuario.getSexo(), usuario.getFecha_Nac());
+
+                                            Intent i = new Intent(context, MainDenarius.class);
+                                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+         context.startActivity(i);
+
+         */
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -55,7 +86,7 @@ public class MainActivity extends AppCompatActivity
         blankFragment = new BlankFragment();
         editTextFragment = new EditTextFragment();
         restFragment = new RESTFragment();
-        fragmentPeliculas = new Peliculas();
+        fragmentAutores = new ListaAutores();
 
         getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, blankFragment).commit();
     }
@@ -107,7 +138,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
             transaction.replace(R.id.FragmentContent, restFragment, "GET");
         } else if (id == R.id.nav_manage) {
-            transaction.replace(R.id.FragmentContent, fragmentPeliculas, "PELICULA");
+            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
