@@ -13,4 +13,18 @@
         android:layout_height="wrap_content"
         android:text="nombre"/>
 
+    <TextView
+        android:id="@+id/viewholder_edad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/viewholder_nombre"
+        android:text="edad"/>
+
+    <TextView
+        android:id="@+id/viewholder_numero"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/viewholder_edad"
+        android:text="numero"/>
+
 </RelativeLayout>

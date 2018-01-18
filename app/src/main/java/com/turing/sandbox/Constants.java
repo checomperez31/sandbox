@@ -7,7 +7,8 @@ package com.turing.sandbox;
 public class Constants {
     public static final String url = "http://10.17.22.96:8080/";
     public static final String url2 = "http://192.168.173.2:8080/";
-    public static final String autenticate = "api/authenticate";
+    public static final String autenticar = "api/authenticate";
     public static final String autores = "api/autors";
+    public static final String userdata = "api/account";
 
 }

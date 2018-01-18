@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -19,26 +18,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by smp_3 on 17/01/2018.
+ * Adaptador
  */
 
 public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.ViewHolderAutores> implements InterfaceData{
 
-    ArrayList<Autor> autores;
-    Context context;
+    private ArrayList<Autor> autores;
+    private Context context;
 
     public AdaptadorAutores(Context context){
-        autores = new ArrayList<Autor>();
+        autores = new ArrayList<>();
         this.context = context;
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Content-type", "application/json");
-        headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(this.context).getToken());
-        Comunicaciones com = new Comunicaciones(this.context);
-        com.getSomethingString(Constants.url2 + Constants.autores,
-                new HashMap<String, String>(),
-                headers,
-                this
-        );
+        if(VolleySingleton.getInstance(context).getToken() != null) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Content-type", "application/json");
+            headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(this.context).getToken());
+            Comunicaciones com = new Comunicaciones(this.context);
+            com.getSomethingString(Constants.url + Constants.autores,
+                    new HashMap<String, String>(),
+                    headers,
+                    this
+            );
+        }
     }
 
     @Override
@@ -50,6 +51,8 @@ public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.View
     @Override
     public void onBindViewHolder(ViewHolderAutores holder, int position) {
         holder.nombre.setText(autores.get(position).getNombre());
+        holder.edad.setText(autores.get(position).getEdad());
+        holder.numero.setText(autores.get(position).getNumero());
     }
 
     @Override
@@ -69,7 +72,7 @@ public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.View
             }
         }
         catch (JSONException jsone){
-
+            Log.i("JSON", jsone.getMessage());
         }
 
     }
@@ -81,6 +84,8 @@ public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.View
         public ViewHolderAutores(View itemView) {
             super(itemView);
             nombre  = itemView.findViewById(R.id.viewholder_nombre);
+            edad = itemView.findViewById(R.id.viewholder_edad);
+            numero = itemView.findViewById(R.id.viewholder_numero);
         }
     }
 }

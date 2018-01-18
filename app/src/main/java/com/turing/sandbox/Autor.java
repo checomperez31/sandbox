@@ -6,9 +6,9 @@ package com.turing.sandbox;
 
 public class Autor {
     private int id;
-    private String nombredelautor;
-    private String pais;
-    private String estadocivil;
+    private String nombre;
+    private int edad;
+    private int numero;
 
     public int getId() {
         return id;
@@ -19,26 +19,26 @@ public class Autor {
     }
 
     public String getNombre() {
-        return nombredelautor;
+        return nombre;
     }
 
     public void setNombre(String nombre) {
-        this.nombredelautor = nombre;
+        this.nombre = nombre;
     }
 
-    public String getEdad() {
-        return pais;
+    public int getEdad() {
+        return edad;
     }
 
-    public void setEdad(String edad) {
-        this.pais = edad;
+    public void setEdad(int edad) {
+        this.edad = edad;
     }
 
-    public String getNumero() {
-        return estadocivil;
+    public int getNumero() {
+        return numero;
     }
 
-    public void setNumero(String numero) {
-        this.estadocivil = numero;
+    public void setNumero(int numero) {
+        this.numero = numero;
     }
 }

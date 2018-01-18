@@ -5,5 +5,5 @@ package com.turing.sandbox;
  */
 
 public interface InterfaceData {
-    public void mostrarDatos(String datos);
+    void mostrarDatos(String datos);
 }

@@ -4,13 +4,13 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -26,9 +26,9 @@ import java.util.Map;
  * Use the {@link RESTFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RESTFragment extends Fragment {
+public class RESTFragment extends Fragment implements InterfaceLogin{
     Button btnRest;
-    TextView response;
+    TextInputEditText usuario, password;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -76,8 +76,9 @@ public class RESTFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_rest, container, false);
+        usuario = view.findViewById(R.id.fragment_rest_etusuario);
+        password = view.findViewById(R.id.fragment_rest_etpassword);
         btnRest = view.findViewById(R.id.btnRest);
-        response = view.findViewById(R.id.text_view_response);
         return  view;
     }
 
@@ -88,15 +89,16 @@ public class RESTFragment extends Fragment {
             public void onClick(View view) {
                 if(VolleySingleton.getInstance(getContext()).getToken() == null){
                     Map<String, String> params = new HashMap<String, String>();
-                    params.put("username", "admin");
-                    params.put("password", "admin");
+                    params.put("username", usuario.getText().toString());
+                    params.put("password", password.getText().toString());
                     JSONObject JsonParams = new JSONObject(params);
                     Log.i("JSON", params + " " + JsonParams.toString());
                     Map<String, String> headers = new HashMap<String, String>();
                     headers.put("Content-type", "application/json");
                     Comunicaciones com = new Comunicaciones(getContext());
-                    com.getSomethingJSON(Constants.url2 + Constants.autenticate,
-                            new JSONObject(params)
+                    com.getSomethingJSON(Constants.url + Constants.autenticar,
+                            new JSONObject(params),
+                            RESTFragment.this
                     );
                 }
 
@@ -126,6 +128,11 @@ public class RESTFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void obtenerToken(JSONObject json) {
+
     }
 
     /**

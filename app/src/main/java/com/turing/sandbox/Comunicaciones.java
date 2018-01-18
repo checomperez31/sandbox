@@ -1,12 +1,7 @@
 package com.turing.sandbox;
 
 import android.content.Context;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -19,11 +14,9 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -38,7 +31,7 @@ public class Comunicaciones {
         this.context = context;
     }
 
-    public void getSomethingJSON(String url, JSONObject params)
+    public void getSomethingJSON(String url, JSONObject params, final InterfaceLogin interfaceLogin)
     {
         final Gson gson = new Gson();
         //final Map<String, String> paramsMap = paramsGetData;
@@ -51,18 +44,7 @@ public class Comunicaciones {
                     @Override
                     public void onResponse(JSONObject response)
                     {
-                        Log.i("JSON", response.toString());
-                        try {
-                            if (response.has("id_token")) {
-                                VolleySingleton.getInstance(context).setToken(response.getString("id_token"));
-                            }
-                            else{
-
-                            }
-                        }
-                        catch(JSONException jsone){
-
-                        }
+                        interfaceLogin.obtenerToken(response);
                     }
                 },
                 new Response.ErrorListener()

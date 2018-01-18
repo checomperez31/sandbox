@@ -16,6 +16,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-locale-l1-1-0.dll'
+        exclude 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-filesystem-l1-1-0.dll'
+        exclude 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-string-l1-1-0.dll'
+        exclude 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-runtime-l1-1-0.dll'
+        exclude 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-heap-l1-1-0.dll'
+        exclude '**org/bytedeco/javacpp/windows-x86_64/**'
+        exclude 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-string-l1-1-0.dll'
+        exclude 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-stdio-l1-1-0.dll'
+        exclude '**org/bytedeco/javacpp/windows-x86/**'
+        exclude '**org/bytedeco/javacpp/macosx-x86_64/**'
+    }
 }
 
 dependencies {
@@ -29,4 +41,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.mcxiaoke.volley:library:1.0.+'
     compile 'com.google.code.gson:gson:2.7'
+    compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4'
 }
