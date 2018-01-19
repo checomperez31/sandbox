@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
 import android.hardware.Camera;
 import android.media.Image;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -28,6 +29,8 @@ import java.io.IOException;
 import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
+import java.util.Set;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
 import static org.bytedeco.javacpp.opencv_core.CV_8UC1;
@@ -38,6 +41,8 @@ import org.bytedeco.javacpp.opencv_face;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgproc.INTER_NEAREST;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
 
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.IntPointer;
@@ -58,9 +63,9 @@ public class Camara extends AppCompatActivity{
     private CameraPreview mPreview;
     private Button btnTomar, btnrec;
 
-    private File image1;
+    private File image1, image2, image3, image4, image5, image6, imageOr;
 
-    private ImageView img1, img2;
+    private ImageView img1, img2, img3, img4, img5, img6, imgOr;
 
     @Override
     protected void onResume() {
@@ -80,14 +85,20 @@ public class Camara extends AppCompatActivity{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camara);
+        setContentView(R.layout.layout_comparacion);
 
-        btnTomar = findViewById(R.id.btn_capturar);
-        btnrec = findViewById(R.id.btn_reconocer);
-        img1 = findViewById(R.id.image1);
-        img2 = findViewById(R.id.image2);
+        //btnTomar = findViewById(R.id.btn_capturar);
+        btnrec = findViewById(R.id.btn_iniciar);
+        img1 = findViewById(R.id.comparacion_img1);
+        img2 = findViewById(R.id.comparacion_img2);
+        img3 = findViewById(R.id.comparacion_img3);
+        img4 = findViewById(R.id.comparacion_img4);
+        img5 = findViewById(R.id.comparacion_img5);
+        img6 = findViewById(R.id.comparacion_img6);
+        img6 = findViewById(R.id.comparacion_img6);
+        imgOr = findViewById(R.id.comparacion_imgOriginal);
 
-        // Create an instance of Camera
+        /*// Create an instance of Camera
         mCamera = getCameraInstance();
 
         int orientation = getWindowManager().getDefaultDisplay().getRotation();
@@ -106,19 +117,29 @@ public class Camara extends AppCompatActivity{
         // Create our Preview view and set it as the content of our activity.
 
         FrameLayout preview = findViewById(R.id.camara_preview);
-        preview.addView(mPreview);
+        preview.addView(mPreview);*/
 
-        btnTomar.setOnClickListener(new View.OnClickListener() {
+
+
+        /*img1.setImageURI(Uri.parse("/storage/emulated/0/DCIM/Camera/IMG_20180119_151912.jpg"));
+        img2.setImageURI(Uri.parse("/storage/emulated/0/DCIM/Camera/IMG_20180119_151917.jpg"));
+        img3.setImageURI(Uri.parse("/storage/emulated/0/DCIM/Camera/IMG_20180119_151922.jpg"));
+        /*img4.setImageURI(Uri.fromFile(image4));
+        img5.setImageURI(Uri.fromFile(image5));
+        img6.setImageURI(Uri.fromFile(image6));
+        imgOr.setImageURI(Uri.parse("/storage/emulated/0/DCIM/Camera/IMG_20180119_151917.jpg"));*/
+
+        /*btnTomar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mCamera.takePicture(null, null, mPicture);
             }
-        });
+        });*/
 
         btnrec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                reconicer();
+                reconocer();
             }
         });
     }
@@ -140,7 +161,11 @@ public class Camara extends AppCompatActivity{
         Camera c = null;
         try {
             Log.i("Camara", "" + Camera.getNumberOfCameras());
-            c = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT); // attempt to get a Camera instance
+            if(Camera.getNumberOfCameras() > 1) {
+                c = Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT); // attempt to get a Camera instance
+            }else{
+                c = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+            }
         }
         catch (Exception e){
             // Camera is not available (in use or does not exist)
@@ -162,9 +187,16 @@ public class Camara extends AppCompatActivity{
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
                 fos.close();
-                img1.setImageURI(Uri.fromFile(pictureFile));
-                img2.setImageURI(Uri.fromFile(pictureFile));
-                image1 = pictureFile;
+                MediaScannerConnection.scanFile (getApplicationContext(), new String[] {pictureFile.toString()}, null, null);
+
+                image1 = new File("/storage/emulated/0/Pictures/MyCameraApp/IMG_20180119_144631.png");
+                image2 = new File("/storage/emulated/0/Pictures/MyCameraApp/IMG_20180119_114309.png");
+                image3 = new File("/storage/emulated/0/Pictures/MyCameraApp/IMG_20180119_121132.png");
+
+                img1.setImageURI(Uri.fromFile(image1));
+                img2.setImageURI(Uri.fromFile(image2));
+                img3.setImageURI(Uri.fromFile(image2));
+
             } catch (FileNotFoundException e) {
                 Log.d("CAM", "File not found: " + e.getMessage());
             } catch (IOException e) {
@@ -201,7 +233,7 @@ public class Camara extends AppCompatActivity{
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE){
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
+                    "IMG_"+ timeStamp + ".png");
         } else if(type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
                     "VID_"+ timeStamp + ".mp4");
@@ -278,11 +310,18 @@ public class Camara extends AppCompatActivity{
         }
     }
 
-    public void reconicer(){
-        String trainingDir = image1.getAbsolutePath();
-        opencv_core.Mat testImage = imread(image1.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-
-        File root = new File(trainingDir);
+    public void reconocer(){
+        image1 = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_151912.jpg");
+        image2 = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_151917.jpg");
+        image3 = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_151922.jpg");
+        /*image4 = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_154121.jpg");
+        image5 = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_154124.jpg");
+        image6 = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_154128.jpg");
+        */imageOr = new File("/storage/emulated/0/DCIM/Camera/IMG_20180119_151917.jpg");
+        opencv_core.Mat testImage = imread(imageOr.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+        Log.i("FRE", testImage.size().toString());
+        resize(testImage,testImage,new opencv_core.Size(640, 480));
+        Log.i("FRE", testImage.size().toString());
 
         FilenameFilter imgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -291,22 +330,57 @@ public class Camara extends AppCompatActivity{
             }
         };
 
-        File imageFiles = image1;
+        opencv_core.MatVector images = new opencv_core.MatVector(2);
 
-        opencv_core.MatVector images = new opencv_core.MatVector(1);
+        //images.push_back(imread(image2.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE));
+        //images.push_back(imread(image3.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE));
 
-        Mat labels = new Mat(1, 1, CV_32SC1);
+        Mat labels = new Mat(6, 1, CV_32SC1);
         IntBuffer labelsBuf = labels.createBuffer();
+        Properties dataMap = new Properties();
+        Set keys = dataMap.keySet();
+        opencv_core.CvMat trainLabels = opencv_core.CvMat.create((keys.size() * 2), 1, CV_32SC1);
 
         int counter = 0;
+        int label;
 
-        Mat img = imread(imageFiles.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+        Mat img = imread(image1.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+        resize(img,img,new opencv_core.Size(640, 480));
+        image1 = null;
+        Mat img2 = imread(image2.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+        resize(img2,img2,new opencv_core.Size(640, 480));
+        image2 = null;
+        Mat img3 = imread(image3.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+        resize(img3,img3,new opencv_core.Size(640, 480));
+        image3 = null;
+
+
 
         //int label = Integer.parseInt(imageFiles.getName().split(".")[0]);
-        int label = 10;
-        images.put(counter, img);
+        /*int yer = image1.getName().indexOf(".");
+        String isim=image1.getName().substring(0,yer);*/
+        label = Integer.parseInt("1");
+        images.push_back(img);
+        images.put(0, img);
+        labelsBuf.put(0, label);
+        labels.data().put((byte) label);
+        labels.data().put((byte) label);
+        Log.e("IMG", "label " + (byte)label);
+        label = Integer.parseInt("2");
+        images.push_back(img2);
+        images.put(1, img);
+        labels.data().put((byte) label);
+        labels.data().put((byte) label);
+        Log.e("IMG", "label " + (byte)label);
+        label = Integer.parseInt("3");
+        images.push_back(img2);
+        images.put(1, img);
+        labels.data().put((byte) label);
+        labels.data().put((byte) label);
+        Log.e("IMG", "label " + (byte)label);
 
-        labelsBuf.put(counter, label);
+        /*labels[0]=label;
+        labels[0]=((counter + 1), (label + 1));*/
 
         /*for (File image : imageFiles) {
             Mat img = imread(image.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
@@ -332,6 +406,7 @@ public class Camara extends AppCompatActivity{
         faceRecognizer.predict(testImage, label2, confidence);
         int predictedLabel = label2.get(0);
 
-        System.out.println("Predicted label: " + predictedLabel);
+        Log.e("IMG", "label " + predictedLabel + "\n" + label2 + "\n" + confidence + "" + faceRecognizer);
+
     }
 }

@@ -53,7 +53,7 @@ public class Prueba {
     private final int PHOTO_CODE = 200;
     private final int SELECT_PICTURE = 300;
 
-    private String mPath;
+    /*private String mPath;
 
     private FloatingActionButton agregarImg;
     private ImageView ivImagen;
@@ -190,9 +190,7 @@ public class Prueba {
             }
         });
 
-        /**
-         * En caso de solo abrir para ver o modificar la publicaci
-         */
+
         if(getIntent().getExtras().getString("Estado").equals("Ver"))
         {
             obj = (ObjetoPerdidos)getIntent().getExtras().getSerializable("Objeto");
@@ -245,14 +243,9 @@ public class Prueba {
                 btnListo.setVisibility(View.INVISIBLE);
             }
         }
-    }
+    }*/
 
-
-    /**
-     * Funcion que comprueba que el formulario esté completo
-     * @param v vista donde se ejecutaran Toast's
-     */
-    public void comprobarFormulario(View v)
+    /*public void comprobarFormulario(View v)
     {
         if(!comprobarNombre())
         {
@@ -271,9 +264,6 @@ public class Prueba {
             return;
         }
 
-        /**
-         * Convertimos la imagen del ImageView en un String Base64
-         */
         String imagenString = "";
         if(imgSelected)
         {
@@ -302,13 +292,11 @@ public class Prueba {
         }
         final String stringImagen = imagenString;
 
-        /**
-         * Obtenemos la Fecha del DatePicker
-         */
+
         int anio = fecha.getYear();
         int mes = fecha.getMonth() + 1;
-        int dia = fecha.getDayOfMonth();
-        final String fechaString = anio + "-" + mes + "-" + dia;
+        int dia = fecha.getDayOfMonth();*/
+        /*final String fechaString = anio + "-" + mes + "-" + dia;
 
 
         Long timestamp = System.currentTimeMillis()/1000;
@@ -563,12 +551,8 @@ public class Prueba {
 
         builder.show();
     }
-
-    /**
-     * Redimensiona la imagen recibida para poder subirla al servidor
-     * @param bmp Bitmap de la imagen a redimensionar
-     * @return bitmap redimensionado
-     */
+    */
+        /*
     public Bitmap redimensionarImagen(Bitmap bmp)
     {
         int ancho = bmp.getWidth();
@@ -594,5 +578,5 @@ public class Prueba {
 
         Bitmap newBmp = Bitmap.createBitmap(bmp, 0, 0, ancho, alto, matrix, false);
         return newBmp;
-    }
+    }*/
 }
