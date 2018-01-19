@@ -10,11 +10,39 @@
         <FrameLayout
             android:id="@+id/camara_preview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="200dp">
 
         </FrameLayout>
 
+        <ImageView
+            android:id="@+id/image1"
+            android:layout_below="@+id/camara_preview"
+            android:layout_alignParentLeft="true"
+            android:layout_width="150dp"
+            android:layout_height="150dp" />
 
+        <ImageView
+            android:id="@+id/image2"
+            android:layout_below="@+id/camara_preview"
+            android:layout_alignParentRight="true"
+            android:layout_width="150dp"
+            android:layout_height="150dp" />
+
+        <Button
+            android:id="@+id/btn_capturar"
+            android:layout_above="@+id/btn_reconocer"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Capturar"/>
+
+        <Button
+            android:id="@+id/btn_reconocer"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="REC"/>
 
     </RelativeLayout>
 

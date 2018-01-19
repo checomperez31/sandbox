@@ -28,6 +28,7 @@
         <activity
             android:name=".Camara"
             android:screenOrientation="fullSensor"
+            android:configChanges="orientation"
             />
         <activity android:name=".MainActivity"/>
     </application>
