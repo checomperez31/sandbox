@@ -408,5 +408,64 @@ public class Camara extends AppCompatActivity{
 
         Log.e("IMG", "label " + predictedLabel + "\n" + label2 + "\n" + confidence + "" + faceRecognizer);
 
+        /*
+
+        public class FacialRecog {
+    public static void main(String[] args) {
+        String trainingDir = "C:\\Users\\smp_3\\Documents\\Fotos";
+        Mat testImage = imread("C:\\Users\\smp_3\\Desktop\\3-sergio_montes_2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+        //Mat testImage = imread("C:\\Users\\smp_3\\Desktop\\choy2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+        resize(testImage,testImage,new opencv_core.Size(640, 480));
+
+        File root = new File(trainingDir);
+
+        FilenameFilter imgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.endsWith(".jpg") || name.endsWith(".pgm") || name.endsWith(".png");
+            }
+        };
+
+        File[] imageFiles = root.listFiles(imgFilter);
+
+        MatVector images = new MatVector(imageFiles.length);
+
+        Mat labels = new Mat(imageFiles.length, 1, CV_32SC1);
+        IntBuffer labelsBuf = labels.createBuffer();
+
+        int counter = 0;
+
+        for (File image : imageFiles) {
+            Mat img = imread(image.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+
+            resize(img,img,new opencv_core.Size(640, 480));
+
+            int label = Integer.parseInt(image.getName().split("-")[0]);
+            System.out.println(image.getName());
+
+            images.put(counter, img);
+
+            labelsBuf.put(counter, label);
+
+            counter++;
+        }
+
+        FaceRecognizer faceRecognizer = opencv_face.FisherFaceRecognizer.create();
+        // FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
+        // FaceRecognizer faceRecognizer = createLBPHFaceRecognizer()
+
+        faceRecognizer.train(images, labels);
+
+        IntPointer label = new IntPointer(1);
+        DoublePointer confidence = new DoublePointer(1);
+        faceRecognizer.predict(testImage, label, confidence);
+        int predictedLabel = label.get(0);
+
+        System.out.println("Predicted label: " + predictedLabel + "\n" + confidence.get() );
+    }
+}
+
+         */
+
     }
 }
