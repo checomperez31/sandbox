@@ -1,0 +1,85 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.turing.sandbox.BlankFragment">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:layout_toLeftOf="@+id/control"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.turing.sandbox.AutoFitTextureView
+                android:id="@+id/texture"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <com.turing.sandbox.FaceSquareView
+                android:id="@+id/face_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </FrameLayout>
+
+        <RelativeLayout
+            android:id="@+id/control"
+            android:layout_width="90dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="#303030">
+
+            <RelativeLayout
+                android:id="@+id/layout_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:id="@+id/progress_face"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"/>
+
+                <TextView
+                    android:layout_below="@+id/progress_face"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:text="Detectando Rostro"/>
+
+            </RelativeLayout>
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/picture"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@android:drawable/ic_menu_camera"
+                android:tint="@android:color/white"
+                android:layout_centerInParent="true"
+                />
+
+            <ImageButton
+                android:id="@+id/info"
+                android:contentDescription="Info"
+                style="@android:style/Widget.Material.Light.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:src="@android:drawable/ic_menu_info_details"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                />
+
+        </RelativeLayout>
+
+
+
+    </RelativeLayout>
+
+</FrameLayout>
