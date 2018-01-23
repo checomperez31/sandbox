@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
@@ -42,6 +44,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -52,10 +55,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,6 +94,8 @@ public class CameraFragment extends Fragment
     private int cameraHeight;
     private Face detectedFace;
     private Rect rectangleFace;
+    private int rotationCanvas = 0;
+    private ByteBuffer byteImage;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -170,27 +179,31 @@ public class CameraFragment extends Fragment
 
                     int canvasWidth = currentCanvas.getWidth();
                     int canvasHeight = currentCanvas.getHeight();
-                    int faceWidthOffset = rectangleFace.width()/8;
-                    int faceHeightOffset = rectangleFace.height()/8;
 
                     currentCanvas.save();
-                    currentCanvas.rotate(360 - mSensorOrientation, canvasWidth / 2,
-                            canvasHeight / 2);
+                    currentCanvas.rotate(360 - rotationCanvas,canvasWidth / 2,canvasHeight / 2);
 
-                    int l = rectangleFace.right;
-                    int t = rectangleFace.bottom;
-                    int r = rectangleFace.left;
-                    int b = rectangleFace.top;
-                    int left = (canvasWidth - (canvasWidth*l)/cameraWidth)-(faceWidthOffset);
-                    int top  = (canvasHeight*t)/cameraHeight - (faceHeightOffset);
-                    int right = (canvasWidth - (canvasWidth*r)/cameraWidth) + (faceWidthOffset);
-                    int bottom = (canvasHeight*b)/cameraHeight + (faceHeightOffset);
-
+                    int l = rectangleFace.left;
+                    int t = rectangleFace.top;
+                    int r = rectangleFace.right;
+                    int b = rectangleFace.bottom;
+                    int left = (l * canvasWidth)/cameraWidth;
+                    int right = (r * canvasWidth)/cameraWidth;
+                    int top, bottom;
+                    if(mSensorOrientation == 90){
+                        top  = (t * canvasHeight)/cameraHeight;
+                        bottom = (b * canvasHeight)/cameraHeight;
+                    }else{
+                        top  = canvasHeight - ((t * canvasHeight)/cameraHeight);
+                        bottom = canvasHeight - ((b * canvasHeight)/cameraHeight);
+                    }
+                    int xc = left + ((right-left)/2);
+                    int yc = top + ((bottom - top)/2);
                     Paint paint = new Paint();
-                    paint.setStyle(Paint.Style.FILL);
+                    paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(5);
                     paint.setColor(Color.RED);
-                    Log.d("DIM", "CanvasH " + canvasHeight +
+                    /*Log.d("DIM", "CanvasH " + canvasHeight +
                     "\nCanvasW " + canvasWidth +
                     "\nCameraH " + cameraHeight +
                     "\nCameraW " + cameraWidth +
@@ -199,15 +212,36 @@ public class CameraFragment extends Fragment
                     "\nFaceR " + rectangleFace.right +
                     "\nFaceR " + right +
                     "\nFaceT " + rectangleFace.top +
-                    "\nFaceB " + rectangleFace.bottom
-                    );
+                    "\nFaceB " + rectangleFace.bottom +
+                                    "\nRotacionCanvas " + rotationCanvas +
+                                    "\nSensorOr " + mSensorOrientation +
+                                    "\nRotacionCelular " + rotationCel
+                    );*/
+                    float tempX = left - xc;
+                    float tempY = top - yc;
 
-                    currentCanvas.drawRect(left, top, right, bottom, greenPaint);
-                    currentCanvas.drawPoint(100, 100, paint);
+                    // now apply rotation
+                    float rotatedX = (float)(tempX*Math.cos(Math.toRadians(90)) - tempY*Math.sin(Math.toRadians(90)));
+                    float rotatedY = (float)(tempX*Math.sin(Math.toRadians(90)) + tempY*Math.cos(Math.toRadians(90)));
+
+                    // translate back
+                    float x = rotatedX + xc;
+                    float y = rotatedY + yc;
+                    float x2 = x - (bottom - top);
+                    float y2 = y + (right - left);
+                    //currentCanvas.drawRect(left, top, right, bottom, greenPaint);
+                    currentCanvas.drawRect(x2, y2, x, y, greenPaint);
+                    /*currentCanvas.drawLine(xc,0, xc, canvasHeight, paint);
+                    paint.setColor(Color.BLUE);
+                    currentCanvas.drawLine(0, yc, canvasWidth, yc, paint);
+                    paint.setColor(Color.YELLOW);
+                    currentCanvas.drawLine(x, 0, x, canvasHeight, paint);
+                    paint.setColor(Color.CYAN);
+                    currentCanvas.drawLine(0, y, canvasHeight, y, paint);*/
                     currentCanvas.restore();
                 }
                 else{
-                    currentCanvas.drawRect(0, 0, 0, 0, greenPaint);
+
                 }
                 mSquareView.getHolder().unlockCanvasAndPost(currentCanvas);
             }
@@ -364,10 +398,16 @@ public class CameraFragment extends Fragment
                         //Log.d(TAG, "face detected " + Integer.toString(face.length) + "\n" + face[0].getBounds());
                         detectedFace = face[0];
                         rectangleFace = detectedFace.getBounds();
+                        if(takePictureOfFace){
+                            takePictureOfFace = false;
+                            lockFocus();
+                        }
 
-                        //takePictureOfFace = false;
-                        //lockFocus();
 
+                    }
+                    else
+                    {
+                        detectedFace = null;
                     }
                     break;
                 }
@@ -509,7 +549,8 @@ public class CameraFragment extends Fragment
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
-        mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+        view.findViewById(R.id.btn_rotar).setOnClickListener(this);
+        mTextureView = view.findViewById(R.id.texture);
         mSquareView = view.findViewById(R.id.face_view);
         mSquareView.setZOrderOnTop(true);
         mSquareView.getHolder().setFormat(
@@ -517,8 +558,7 @@ public class CameraFragment extends Fragment
         greenPaint = new Paint();
         greenPaint.setColor(Color.GREEN);
         greenPaint.setStyle(Paint.Style.STROKE);
-        int orientation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-        Log.i("OR", orientation + "");
+        greenPaint.setStrokeWidth(4);
     }
 
     @Override
@@ -605,7 +645,7 @@ public class CameraFragment extends Fragment
                 // We don't use a front facing camera in this sample.
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
                 if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                    continue;
+                    mCameraId = cameraId;
                 }
 
                 StreamConfigurationMap map = characteristics.get(
@@ -618,6 +658,9 @@ public class CameraFragment extends Fragment
                 Size largest = Collections.max(
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
+                Log.i("SIZE", largest + "\n" + Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)));
+                if(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)).contains(Size.parseSize("1920x1080")))largest = Size.parseSize("1920x1080");
+                Log.i("SIZE", largest + "");
                 mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                         ImageFormat.JPEG, /*maxImages*/2);
                 mImageReader.setOnImageAvailableListener(
@@ -631,15 +674,43 @@ public class CameraFragment extends Fragment
                 boolean swappedDimensions = false;
                 switch (displayRotation) {
                     case Surface.ROTATION_0:
-                    case Surface.ROTATION_180:
-                        if (mSensorOrientation == 90 || mSensorOrientation == 270) {
-                            swappedDimensions = true;
+                        if(mSensorOrientation == 90){
+                            rotationCanvas = 270;
+                        }
+                        if(mSensorOrientation == 270){
+                            rotationCanvas = 90;
                         }
                         break;
                     case Surface.ROTATION_90:
-                    case Surface.ROTATION_270:
-                        if (mSensorOrientation == 0 || mSensorOrientation == 180) {
+                        if(mSensorOrientation == 90){
+                            rotationCanvas = 0;
+                        }
+                        if(mSensorOrientation == 270){
+                            rotationCanvas = 180;
+                        }
+                        break;
+                    case Surface.ROTATION_180:
+                        if(mSensorOrientation == 90){
+                            rotationCanvas = 90;
                             swappedDimensions = true;
+                        }
+                        if(mSensorOrientation == 270){
+                            rotationCanvas = 270;
+                            swappedDimensions = true;
+                        }
+                        break;
+                    case Surface.ROTATION_270:
+                        if(mSensorOrientation == 90){
+                            rotationCanvas = 180;
+                        }
+                        if(mSensorOrientation == 0){
+                            swappedDimensions = true;
+                        }
+                        if(mSensorOrientation == 180){
+                            swappedDimensions = true;
+                        }
+                        if(mSensorOrientation == 270){
+                            rotationCanvas = 0;
                         }
                         break;
                     default:
@@ -680,8 +751,12 @@ public class CameraFragment extends Fragment
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     mTextureView.setAspectRatio(
                             mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    mSquareView.setAspectRatio(
+                            mPreviewSize.getWidth(), mPreviewSize.getHeight());
                 } else {
                     mTextureView.setAspectRatio(
+                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    mSquareView.setAspectRatio(
                             mPreviewSize.getHeight(), mPreviewSize.getWidth());
                 }
 
@@ -694,9 +769,9 @@ public class CameraFragment extends Fragment
                     for (int FaceD : FD
                             ) {
                         fdList.add(FaceD);
-                        Log.d(TAG, "setUpCameraOutputs: FD type:" + Integer.toString(FaceD));
+                        //Log.d(TAG, "setUpCameraOutputs: FD type:" + Integer.toString(FaceD));
                     }
-                    Log.d(TAG, "setUpCameraOutputs: FD count" + Integer.toString(maxFD));
+                    //Log.d(TAG, "setUpCameraOutputs: FD count" + Integer.toString(maxFD));
 
                     if (maxFD > 0) {
                         mFaceDetectSupported = true;
@@ -708,8 +783,7 @@ public class CameraFragment extends Fragment
                 Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
                 mFlashSupported = available == null ? false : available;
 
-                mCameraId = cameraId;
-                return;
+                if(mCameraId == null)mCameraId = cameraId;
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -997,7 +1071,13 @@ public class CameraFragment extends Fragment
                     });
                     showToast("Saved: " + mFile);
                     MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
+                    Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+                    byte[] b = baos.toByteArray();
+                    String base64Image = Base64.encodeToString(b, Base64.NO_WRAP);
                     Log.d(TAG, mFile.toString());
+                    Log.d(TAG, base64Image);
                     unlockFocus();
                 }
             };
@@ -1061,6 +1141,10 @@ public class CameraFragment extends Fragment
                             .show();
                 }
                 break;
+            }
+            case R.id.btn_rotar:{
+                rotationCanvas+=90;
+                if(rotationCanvas == 360)rotationCanvas = 0;
             }
         }
     }
