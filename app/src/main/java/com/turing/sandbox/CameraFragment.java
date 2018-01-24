@@ -57,12 +57,9 @@ import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -95,7 +92,10 @@ public class CameraFragment extends Fragment
     private Face detectedFace;
     private Rect rectangleFace;
     private int rotationCanvas = 0;
-    private ByteBuffer byteImage;
+    int[] anchosFotos = {600, 750, 900};
+    int[] altosFotos = new int[3];
+    int centerx, centery;
+    private boolean mAutoFocusSupported = false;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -190,6 +190,7 @@ public class CameraFragment extends Fragment
                     int left = (l * canvasWidth)/cameraWidth;
                     int right = (r * canvasWidth)/cameraWidth;
                     int top, bottom;
+                    //Relacion de aspecto 4:3
                     if(mSensorOrientation == 90){
                         top  = (t * canvasHeight)/cameraHeight;
                         bottom = (b * canvasHeight)/cameraHeight;
@@ -214,31 +215,80 @@ public class CameraFragment extends Fragment
                     "\nFaceT " + rectangleFace.top +
                     "\nFaceB " + rectangleFace.bottom +
                                     "\nRotacionCanvas " + rotationCanvas +
-                                    "\nSensorOr " + mSensorOrientation +
-                                    "\nRotacionCelular " + rotationCel
+                                    "\nSensorOr " + mSensorOrientation
                     );*/
                     float tempX = left - xc;
                     float tempY = top - yc;
 
-                    // now apply rotation
+                    // rotamos el rectangulo de la cara
                     float rotatedX = (float)(tempX*Math.cos(Math.toRadians(90)) - tempY*Math.sin(Math.toRadians(90)));
                     float rotatedY = (float)(tempX*Math.sin(Math.toRadians(90)) + tempY*Math.cos(Math.toRadians(90)));
 
-                    // translate back
+                    //aplicamos loas nuevas coordenadas
                     float x = rotatedX + xc;
                     float y = rotatedY + yc;
                     float x2 = x - (bottom - top);
                     float y2 = y + (right - left);
+
+                    int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+                    float[] alto, ancho;
+                    alto = new float[3];
+                    ancho = new float[3];
+                    for(int i = 0; i < anchosFotos.length; i++){
+                        alto[i] = (altosFotos[i] * canvasHeight)/cameraHeight;
+                        ancho[i] = (anchosFotos[i] * canvasWidth)/cameraWidth;
+                    }
+                    if(displayRotation == 0){
+                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
+                        paint.setColor(Color.MAGENTA);
+                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), paint);
+                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), paint);
+                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), paint);
+                        centery = ((xc * cameraWidth)/canvasWidth);
+                        centerx = cameraHeight -((yc * cameraHeight)/canvasHeight);
+                        //arriba, izquierda, abajo, derecha
+                    }else if(displayRotation == 1){
+                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
+                        paint.setColor(Color.MAGENTA);
+                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), paint);
+                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), paint);
+                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), paint);
+                        centerx = (xc * cameraWidth)/canvasWidth;
+                        centery = (yc * cameraHeight)/canvasHeight;
+                        //izquierda abajo derecha arriba
+                    }else if(displayRotation == 2){
+                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
+                        paint.setColor(Color.MAGENTA);
+                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), paint);
+                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), paint);
+                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), paint);
+                        centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
+                        centerx = ((yc * cameraHeight)/canvasHeight);
+                        //arriba. derecha, abajo, izquierda
+                    }else{
+                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
+                        paint.setColor(Color.MAGENTA);
+                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), paint);
+                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), paint);
+                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), paint);
+                        centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
+                        centery = cameraHeight -((yc * cameraHeight)/canvasHeight);
+                        //derecha, abajo, izquierda, arriba
+                    }
                     //currentCanvas.drawRect(left, top, right, bottom, greenPaint);
-                    currentCanvas.drawRect(x2, y2, x, y, greenPaint);
-                    /*currentCanvas.drawLine(xc,0, xc, canvasHeight, paint);
+                    //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
+                    paint.setColor(Color.RED);
+                    currentCanvas.drawLine(xc,0, xc, canvasHeight, paint);
                     paint.setColor(Color.BLUE);
                     currentCanvas.drawLine(0, yc, canvasWidth, yc, paint);
+
+
+                    /*currentCanvas.drawLine(0,rectTop, canvasWidth, rectTop, paint);//X
                     paint.setColor(Color.YELLOW);
-                    currentCanvas.drawLine(x, 0, x, canvasHeight, paint);
+                    currentCanvas.drawLine(rectLeft, 0, rectLeft, canvasHeight, paint);
                     paint.setColor(Color.CYAN);
-                    currentCanvas.drawLine(0, y, canvasHeight, y, paint);*/
-                    currentCanvas.restore();
+                    currentCanvas.drawLine(0, rectBottom, canvasWidth, rectBottom, paint);//X
+                    currentCanvas.restore();*/
                 }
                 else{
 
@@ -385,6 +435,7 @@ public class CameraFragment extends Fragment
             = new CameraCaptureSession.CaptureCallback() {
 
         private void process(CaptureResult result) {
+
             switch (mState) {
                 case STATE_PREVIEW: {
                     Face face[]=result.get(CaptureResult.STATISTICS_FACES);
@@ -399,8 +450,14 @@ public class CameraFragment extends Fragment
                         detectedFace = face[0];
                         rectangleFace = detectedFace.getBounds();
                         if(takePictureOfFace){
+                            detectedFace = null;
                             takePictureOfFace = false;
-                            lockFocus();
+
+                            if (mAutoFocusSupported) {
+                                lockFocus();
+                            } else {
+                                captureStillPicture();
+                            }
                         }
 
 
@@ -412,11 +469,16 @@ public class CameraFragment extends Fragment
                     break;
                 }
                 case STATE_WAITING_LOCK: {
+                    Log.i("Cam", "Captura1");
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+
                     if (afState == null) {
+                        Log.i("Cam", "afstate null");
                         captureStillPicture();
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
-                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState ||
+                            CaptureResult.CONTROL_AF_STATE_INACTIVE == afState) {
+                        Log.i("Cam", "lkajldka");
                         // CONTROL_AE_STATE can be null on some devices
                         Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                         if (aeState == null ||
@@ -430,6 +492,7 @@ public class CameraFragment extends Fragment
                     break;
                 }
                 case STATE_WAITING_PRECAPTURE: {
+                    Log.i("Cam", "Captura2");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null ||
@@ -440,6 +503,7 @@ public class CameraFragment extends Fragment
                     break;
                 }
                 case STATE_WAITING_NON_PRECAPTURE: {
+                    Log.i("Cam", "Captura3");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
@@ -653,13 +717,18 @@ public class CameraFragment extends Fragment
                 if (map == null) {
                     continue;
                 }
+                //Calculamos los altos de las 3 fotos que se van a tomar
+                for(int i =0; i < anchosFotos.length; i++) {
+                    altosFotos[i] = (anchosFotos[i] * 4) / 3;
+                    Log.i("SIZE", anchosFotos[i] + "" + altosFotos[i]);
+                }
 
                 // For still image captures, we use the largest available size.
                 Size largest = Collections.max(
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
                 Log.i("SIZE", largest + "\n" + Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)));
-                if(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)).contains(Size.parseSize("1920x1080")))largest = Size.parseSize("1920x1080");
+                //if(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)).contains(Size.parseSize("1280x960")))largest = Size.parseSize("1280x960");
                 Log.i("SIZE", largest + "");
                 mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                         ImageFormat.JPEG, /*maxImages*/2);
@@ -783,7 +852,17 @@ public class CameraFragment extends Fragment
                 Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
                 mFlashSupported = available == null ? false : available;
 
-                if(mCameraId == null)mCameraId = cameraId;
+                int[] afAvailableModes = characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+
+                if (afAvailableModes.length == 0 || (afAvailableModes.length == 1
+                        && afAvailableModes[0] == CameraMetadata.CONTROL_AF_MODE_OFF)) {
+                    mAutoFocusSupported = false;
+                } else {
+                    mAutoFocusSupported = true;
+                }
+
+                if(mCameraId == null) mCameraId = cameraId;
+
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -1062,6 +1141,44 @@ public class CameraFragment extends Fragment
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
                     final Activity activity = getActivity();
+
+                    showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
+                    MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
+                    Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
+
+                    //Generamos las 3 Imagenes para el reconocimiento
+                    Matrix matrix = new Matrix();
+                    matrix.postScale(1f, 1f);
+
+                    //write the bytes in file
+                    try {
+                        for(int i = 0; i < anchosFotos.length; i++){
+                            Bitmap bitmapChico = Bitmap.createBitmap(bm, (centerx - (anchosFotos[i]/2)), (centery - (altosFotos[i]/2)),
+                                    (anchosFotos[i]), ((altosFotos[i])), matrix, true);
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                            bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+                            byte[] bitmapdata = bos.toByteArray();
+                            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
+                                    File.separator + "MyCameraApp" + File.separator + "IMG" + (System.currentTimeMillis()/1000) + "_" + anchosFotos[0] +".png");
+                            FileOutputStream fos = new FileOutputStream(file);
+                            fos.write(bitmapdata);
+                            fos.flush();
+                            fos.close();
+                            MediaScannerConnection.scanFile (activity, new String[] {file.toString()}, null, null);
+                        }
+
+                    }
+                    catch(IOException ioe){
+
+                    }
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+                    byte[] b = baos.toByteArray();
+                    String base64Image = Base64.encodeToString(b, Base64.NO_WRAP);
+                    Log.d(TAG, mFile.toString());
+                    Log.d(TAG, base64Image);
+
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -1069,15 +1186,6 @@ public class CameraFragment extends Fragment
                             getView().findViewById(R.id.picture).setVisibility(View.VISIBLE);
                         }
                     });
-                    showToast("Saved: " + mFile);
-                    MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
-                    Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
-                    byte[] b = baos.toByteArray();
-                    String base64Image = Base64.encodeToString(b, Base64.NO_WRAP);
-                    Log.d(TAG, mFile.toString());
-                    Log.d(TAG, base64Image);
                     unlockFocus();
                 }
             };
