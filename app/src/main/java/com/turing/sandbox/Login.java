@@ -52,7 +52,7 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
         btnIniciar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
+
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("username", usuario.getText().toString());
                 params.put("password", password.getText().toString());
@@ -62,20 +62,20 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
                 headers.put("Content-type", "application/json");
                 Comunicaciones com = new Comunicaciones(getApplicationContext());
                 com.getSomethingJSON(Constants.url + Constants.autenticar,
-                        new JSONObject(params),
+                        JsonParams,
+                        headers,
                         Login.this
-                );*/
-                Intent i = new Intent(Login.this, Camara.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                Login.this.startActivity(i);
+                );
             }
         });
     }
 
     @Override
     public void mostrarDatos(String datos) {
-
+        Intent i = new Intent(Login.this, Camara.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Login.this.startActivity(i);
     }
 
     @Override

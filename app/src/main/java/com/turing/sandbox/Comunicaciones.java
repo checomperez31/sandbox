@@ -31,7 +31,7 @@ public class Comunicaciones {
         this.context = context;
     }
 
-    public void getSomethingJSON(String url, JSONObject params, final InterfaceLogin interfaceLogin)
+    public void getSomethingJSON(String url, JSONObject params, final Map<String, String> headers, final InterfaceLogin interfaceLogin)
     {
         final Gson gson = new Gson();
         //final Map<String, String> paramsMap = paramsGetData;
@@ -57,13 +57,13 @@ public class Comunicaciones {
                 }
         )
         {
-            /*@Override
+            @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = headersMap;
-                return params;
+                Map<String, String> mParams = headers;
+                return mParams;
             }
 
-            @Override
+            /*@Override
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = paramsMap;
@@ -93,7 +93,6 @@ public class Comunicaciones {
 
     public void getSomethingString(String url, Map<String, String> paramsGetData, Map<String, String> headers, final InterfaceData adapter)
     {
-        final Gson gson = new Gson();
         final Map<String, String> paramsMap = paramsGetData;
         final Map<String, String> headersMap = headers;
         StringRequest stringRequest = new StringRequest(

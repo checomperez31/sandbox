@@ -96,6 +96,7 @@ public class CameraFragment extends Fragment
     int[] altosFotos = new int[3];
     int centerx, centery;
     private boolean mAutoFocusSupported = false;
+    private int fotoRotation = 0;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -176,7 +177,12 @@ public class CameraFragment extends Fragment
             if(currentCanvas != null){
                 currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 if (detectedFace != null && rectangleFace.height() > 0) {
-
+                    int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+                    Log.i("DR", displayRotation + "");
+                    int mult = 1;
+                    if(displayRotation == 0 || displayRotation == 2){
+                        mult = 2;
+                    }
                     int canvasWidth = currentCanvas.getWidth();
                     int canvasHeight = currentCanvas.getHeight();
 
@@ -229,23 +235,30 @@ public class CameraFragment extends Fragment
                     float y = rotatedY + yc;
                     float x2 = x - (bottom - top);
                     float y2 = y + (right - left);
-
-                    int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
                     float[] alto, ancho;
                     alto = new float[3];
                     ancho = new float[3];
                     for(int i = 0; i < anchosFotos.length; i++){
-                        alto[i] = (altosFotos[i] * canvasHeight)/cameraHeight;
-                        ancho[i] = (anchosFotos[i] * canvasWidth)/cameraWidth;
+                        alto[i] = ((altosFotos[i] * canvasHeight)/cameraHeight);
+                        ancho[i] = ((anchosFotos[i] * canvasWidth)/cameraWidth) * mult;
                     }
+                    Log.i("SENS", mSensorOrientation + "");
                     if(displayRotation == 0){
                         //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
                         paint.setColor(Color.MAGENTA);
                         currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), paint);
                         currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), paint);
                         currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), paint);
-                        centery = ((xc * cameraWidth)/canvasWidth);
-                        centerx = cameraHeight -((yc * cameraHeight)/canvasHeight);
+
+                        if(mSensorOrientation == 270){
+                            centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
+                            centerx = cameraHeight - ((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 0;
+                        }else{
+                            centery = ((xc * cameraWidth)/canvasWidth);
+                            centerx = cameraHeight -((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 0;
+                        }
                         //arriba, izquierda, abajo, derecha
                     }else if(displayRotation == 1){
                         //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
@@ -253,8 +266,16 @@ public class CameraFragment extends Fragment
                         currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), paint);
                         currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), paint);
                         currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), paint);
-                        centerx = (xc * cameraWidth)/canvasWidth;
-                        centery = (yc * cameraHeight)/canvasHeight;
+
+                        if(mSensorOrientation == 270){
+                            centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
+                            centery = ((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 180;
+                        }else{
+                            centerx = (xc * cameraWidth)/canvasWidth;
+                            centery = (yc * cameraHeight)/canvasHeight;
+                            fotoRotation = 0;
+                        }
                         //izquierda abajo derecha arriba
                     }else if(displayRotation == 2){
                         //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
@@ -262,8 +283,16 @@ public class CameraFragment extends Fragment
                         currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), paint);
                         currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), paint);
                         currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), paint);
-                        centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
-                        centerx = ((yc * cameraHeight)/canvasHeight);
+
+                        if(mSensorOrientation == 270){
+                            centery = ((xc * cameraWidth)/canvasWidth);
+                            centerx = ((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 0;
+                        }else{
+                            centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
+                            centerx = ((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 0;
+                        }
                         //arriba. derecha, abajo, izquierda
                     }else{
                         //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
@@ -271,8 +300,16 @@ public class CameraFragment extends Fragment
                         currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), paint);
                         currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), paint);
                         currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), paint);
-                        centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
-                        centery = cameraHeight -((yc * cameraHeight)/canvasHeight);
+
+                        if(mSensorOrientation == 270){
+                            centerx = ((xc * cameraWidth)/canvasWidth);
+                            centery = cameraHeight -((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 180;
+                        }else{
+                            centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
+                            centery = cameraHeight -((yc * cameraHeight)/canvasHeight);
+                            fotoRotation = 0;
+                        }
                         //derecha, abajo, izquierda, arriba
                     }
                     //currentCanvas.drawRect(left, top, right, bottom, greenPaint);
@@ -439,20 +476,14 @@ public class CameraFragment extends Fragment
             switch (mState) {
                 case STATE_PREVIEW: {
                     Face face[]=result.get(CaptureResult.STATISTICS_FACES);
-                    /*if (face.length>0 && takePictureOfFace){
-                        Log.d(TAG, "face detected " + Integer.toString(face.length) + "\n" + face[0].getBounds());
-                        takePictureOfFace = false;
-                        lockFocus();
-
-                    }*/
                     if (face.length>0){
-                        //Log.d(TAG, "face detected " + Integer.toString(face.length) + "\n" + face[0].getBounds());
                         detectedFace = face[0];
                         rectangleFace = detectedFace.getBounds();
                         if(takePictureOfFace){
                             detectedFace = null;
                             takePictureOfFace = false;
 
+                            //Comprobamos si la camara tiene soporte para autofocus o no
                             if (mAutoFocusSupported) {
                                 lockFocus();
                             } else {
@@ -469,16 +500,13 @@ public class CameraFragment extends Fragment
                     break;
                 }
                 case STATE_WAITING_LOCK: {
-                    Log.i("Cam", "Captura1");
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
 
                     if (afState == null) {
-                        Log.i("Cam", "afstate null");
                         captureStillPicture();
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
                             CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState ||
                             CaptureResult.CONTROL_AF_STATE_INACTIVE == afState) {
-                        Log.i("Cam", "lkajldka");
                         // CONTROL_AE_STATE can be null on some devices
                         Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                         if (aeState == null ||
@@ -492,7 +520,6 @@ public class CameraFragment extends Fragment
                     break;
                 }
                 case STATE_WAITING_PRECAPTURE: {
-                    Log.i("Cam", "Captura2");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null ||
@@ -503,7 +530,6 @@ public class CameraFragment extends Fragment
                     break;
                 }
                 case STATE_WAITING_NON_PRECAPTURE: {
-                    Log.i("Cam", "Captura3");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
@@ -631,8 +657,7 @@ public class CameraFragment extends Fragment
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "MyCameraApp");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
+
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
@@ -1143,18 +1168,20 @@ public class CameraFragment extends Fragment
                     final Activity activity = getActivity();
 
                     showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
+                    //Notificamos al media scanner que se ha creado un archivo
                     MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
                     Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
 
-                    //Generamos las 3 Imagenes para el reconocimiento
                     Matrix matrix = new Matrix();
                     matrix.postScale(1f, 1f);
+                    matrix.postRotate(fotoRotation);
+
 
                     //write the bytes in file
                     try {
                         for(int i = 0; i < anchosFotos.length; i++){
                             Bitmap bitmapChico = Bitmap.createBitmap(bm, (centerx - (anchosFotos[i]/2)), (centery - (altosFotos[i]/2)),
-                                    (anchosFotos[i]), ((altosFotos[i])), matrix, true);
+                                        (anchosFotos[i]), ((altosFotos[i])), matrix, true);
                             ByteArrayOutputStream bos = new ByteArrayOutputStream();
                             bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
                             byte[] bitmapdata = bos.toByteArray();

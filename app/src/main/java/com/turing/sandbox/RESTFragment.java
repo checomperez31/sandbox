@@ -98,6 +98,7 @@ public class RESTFragment extends Fragment implements InterfaceLogin{
                     Comunicaciones com = new Comunicaciones(getContext());
                     com.getSomethingJSON(Constants.url + Constants.autenticar,
                             new JSONObject(params),
+                            headers,
                             RESTFragment.this
                     );
                 }
