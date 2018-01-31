@@ -17,6 +17,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,6 +64,7 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
                 headers.put("Content-type", "application/json");
                 Comunicaciones com = new Comunicaciones(getApplicationContext());
                 com.getSomethingJSON(Constants.url + Constants.autenticar,
+                        Request.Method.POST,
                         JsonParams,
                         headers,
                         Login.this
@@ -79,6 +82,11 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
     }
 
     @Override
+    public void mostrarDatos(JSONObject datos) {
+
+    }
+
+    @Override
     public void obtenerToken(JSONObject json) {
         Log.i("JSON", json.toString());
         try {
@@ -89,7 +97,8 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
                 headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(getApplicationContext()).getToken());
                 Comunicaciones com = new Comunicaciones(getApplicationContext());
                 com.getSomethingString(Constants.url + Constants.userdata,
-                        new HashMap<String, String>(),
+                        Request.Method.POST,
+                        new JSONObject(),
                         headers,
                         this
                 );

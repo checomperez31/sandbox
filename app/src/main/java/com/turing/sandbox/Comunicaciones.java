@@ -31,12 +31,10 @@ public class Comunicaciones {
         this.context = context;
     }
 
-    public void getSomethingJSON(String url, JSONObject params, final Map<String, String> headers, final InterfaceLogin interfaceLogin)
+    public void getSomethingJSON(String url, int method, JSONObject params, final Map<String, String> headers, final InterfaceData interfaceData)
     {
-        final Gson gson = new Gson();
-        //final Map<String, String> paramsMap = paramsGetData;
-        //final Map<String, String> headersMap = headers;
         JsonObjectRequest stringRequest = new JsonObjectRequest(
+                method,
                 url,
                 params,
                 new Response.Listener<JSONObject>()
@@ -44,7 +42,123 @@ public class Comunicaciones {
                     @Override
                     public void onResponse(JSONObject response)
                     {
-                        interfaceLogin.obtenerToken(response);
+                        interfaceData.mostrarDatos(response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        Log.i("Error", "Error: " + error.getMessage());
+                    }
+
+
+                }
+        )
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> mParams = headers;
+                return mParams;
+            }
+
+
+        };
+        stringRequest.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+        VolleySingleton.getInstance(context).getRequestQueue().add(stringRequest);
+    }
+
+    public void getSomethingString(String url, int method, final JSONObject param, final Map<String, String> headers, final InterfaceData adapter)
+    {
+        StringRequest stringRequest = new StringRequest(
+                method,
+                url,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        adapter.mostrarDatos(response);
+                        Log.i("DCOM", response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        Log.e("DCOM", error.getMessage());
+                    }
+                }
+        )
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = headers;
+                return params;
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                return super.getBody();
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        stringRequest.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+        requestQueue.add(stringRequest);
+    }
+
+    public void registrarAsistencia(String url, final JSONObject params, final Map<String, String> headers, final InterfaceData interfaceDace)
+    {
+        final Gson gson = new Gson();
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.GET,
+                Constants.url + Constants.userdata + "/checo",
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        Log.i("RES", response);
+                        try{
+                            JSONObject user = new JSONObject(response);
+                            params.put("user", user);
+                        }
+                        catch(JSONException jsone){
+
+                        }
+
                     }
                 },
                 new Response.ErrorListener()
@@ -89,64 +203,5 @@ public class Comunicaciones {
         });
         Log.i("RRR", stringRequest.toString() + "");
         VolleySingleton.getInstance(context).getRequestQueue().add(stringRequest);
-    }
-
-    public void getSomethingString(String url, Map<String, String> paramsGetData, Map<String, String> headers, final InterfaceData adapter)
-    {
-        final Map<String, String> paramsMap = paramsGetData;
-        final Map<String, String> headersMap = headers;
-        StringRequest stringRequest = new StringRequest(
-                Request.Method.GET,
-                url,
-                new Response.Listener<String>()
-                {
-                    @Override
-                    public void onResponse(String response)
-                    {
-                        adapter.mostrarDatos(response);
-                        Log.i("DCOM", response);
-                    }
-                },
-                new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error)
-                    {
-                        Log.e("DCOM", error.getMessage());
-                    }
-                }
-        )
-        {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = headersMap;
-                return params;
-            }
-
-            @Override
-            protected Map<String, String> getParams()
-            {
-                Map<String, String> params = paramsMap;
-                return params;
-            }
-        };
-        RequestQueue requestQueue = Volley.newRequestQueue(context);
-        stringRequest.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        requestQueue.add(stringRequest);
     }
 }

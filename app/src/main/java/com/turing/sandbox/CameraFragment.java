@@ -40,9 +40,11 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Base64;
 import android.util.Log;
@@ -55,6 +57,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -64,7 +71,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -73,7 +82,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class CameraFragment extends Fragment
-        implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
+        implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, InterfaceData {
 
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -97,6 +106,9 @@ public class CameraFragment extends Fragment
     int centerx, centery;
     private boolean mAutoFocusSupported = false;
     private int fotoRotation = 0;
+    ProgressDialog progress;
+
+    private TextInputEditText etusuario;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -178,7 +190,6 @@ public class CameraFragment extends Fragment
                 currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 if (detectedFace != null && rectangleFace.height() > 0) {
                     int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-                    Log.i("DR", displayRotation + "");
                     int mult = 1;
                     if(displayRotation == 0 || displayRotation == 2){
                         mult = 2;
@@ -242,7 +253,6 @@ public class CameraFragment extends Fragment
                         alto[i] = ((altosFotos[i] * canvasHeight)/cameraHeight);
                         ancho[i] = ((anchosFotos[i] * canvasWidth)/cameraWidth) * mult;
                     }
-                    Log.i("SENS", mSensorOrientation + "");
                     if(displayRotation == 0){
                         //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
                         paint.setColor(Color.MAGENTA);
@@ -649,6 +659,8 @@ public class CameraFragment extends Fragment
         greenPaint.setColor(Color.GREEN);
         greenPaint.setStyle(Paint.Style.STROKE);
         greenPaint.setStrokeWidth(4);
+
+        etusuario = view.findViewById(R.id.cam_etusuario);
     }
 
     @Override
@@ -667,10 +679,7 @@ public class CameraFragment extends Fragment
             }
         }
 
-        //mFile = new File(getActivity().getExternalFilesDir(null), "pic.jpg");
-
-
-        mFile = new File(mediaStorageDir + File.separator + "pic.jpg");
+        mFile = new File(mediaStorageDir.toString() + File.separator + "pic.jpg");
 
     }
 
@@ -753,7 +762,7 @@ public class CameraFragment extends Fragment
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
                 Log.i("SIZE", largest + "\n" + Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)));
-                //if(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)).contains(Size.parseSize("1280x960")))largest = Size.parseSize("1280x960");
+                if(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)).contains(Size.parseSize("1280x960")))largest = Size.parseSize("1280x960");
                 Log.i("SIZE", largest + "");
                 mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                         ImageFormat.JPEG, /*maxImages*/2);
@@ -1089,11 +1098,13 @@ public class CameraFragment extends Fragment
      */
     private void takePicture() {
         final Activity activity = getActivity();
+        progress = new ProgressDialog(getContext());
+
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getView().findViewById(R.id.layout_progress).setVisibility(View.VISIBLE);
-                getView().findViewById(R.id.picture).setVisibility(View.GONE);
+                progress.setMensaje("Validando");
+                progress.show();
             }
         });
         takePictureOfFace = true;
@@ -1165,11 +1176,11 @@ public class CameraFragment extends Fragment
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
-                    final Activity activity = getActivity();
 
-                    showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
+
+                    //showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
                     //Notificamos al media scanner que se ha creado un archivo
-                    MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
+                    //MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
                     Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
 
                     Matrix matrix = new Matrix();
@@ -1178,12 +1189,12 @@ public class CameraFragment extends Fragment
 
 
                     //write the bytes in file
-                    try {
+                    /*try {
                         for(int i = 0; i < anchosFotos.length; i++){
                             Bitmap bitmapChico = Bitmap.createBitmap(bm, (centerx - (anchosFotos[i]/2)), (centery - (altosFotos[i]/2)),
                                         (anchosFotos[i]), ((altosFotos[i])), matrix, true);
                             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                            bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+                            bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 , bos);
                             byte[] bitmapdata = bos.toByteArray();
                             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
                                     File.separator + "MyCameraApp" + File.separator + "IMG" + (System.currentTimeMillis()/1000) + "_" + anchosFotos[0] +".png");
@@ -1198,7 +1209,10 @@ public class CameraFragment extends Fragment
                     catch(IOException ioe){
 
                     }
+                    Bitmap bitmapChico = Bitmap.createBitmap(bm, 0, 0,
+                            bm.getWidth(), bm.getHeight(), matrix, false);
 
+                    bm.recycle();*/
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
                     byte[] b = baos.toByteArray();
@@ -1206,14 +1220,27 @@ public class CameraFragment extends Fragment
                     Log.d(TAG, mFile.toString());
                     Log.d(TAG, base64Image);
 
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            getView().findViewById(R.id.layout_progress).setVisibility(View.GONE);
-                            getView().findViewById(R.id.picture).setVisibility(View.VISIBLE);
-                        }
-                    });
-                    unlockFocus();
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Content-type", "application/json");
+                    JSONObject json = new JSONObject();
+                    try{
+                        json.put("fecha", "2018-01-10");
+                        json.put("ubicacion", "ubicacion");
+                        json.put("asistenciasuserId", etusuario.getText().toString());
+                        json.put("imagen", base64Image);
+                    }
+                    catch(JSONException jsone){
+
+                    }
+
+                    Comunicaciones com = new Comunicaciones(getContext());
+                    com.getSomethingJSON(
+                            Constants.url + Constants.asistencia,
+                            Request.Method.POST,
+                            json,
+                            headers,
+                            CameraFragment.this
+                    );
                 }
             };
 
@@ -1264,7 +1291,17 @@ public class CameraFragment extends Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                takePicture();
+                if(!etusuario.getText().toString().trim().equals("")){
+                    takePicture();
+                }else{
+                    Activity activity = getActivity();
+                    if (null != activity) {
+                        new AlertDialog.Builder(activity)
+                                .setMessage("Inserta tu ID")
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show();
+                    }
+                }
                 break;
             }
             case R.id.info: {
@@ -1278,8 +1315,25 @@ public class CameraFragment extends Fragment
                 break;
             }
             case R.id.btn_rotar:{
-                rotationCanvas+=90;
-                if(rotationCanvas == 360)rotationCanvas = 0;
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-type", "application/json");
+                JSONObject json = new JSONObject();
+                try{
+                    json.put("fecha", "hoy");
+                    json.put("ubicacion", "ubicacion");
+                }
+                catch(JSONException jsone){
+
+                }
+
+                Comunicaciones com = new Comunicaciones(getContext());
+                com.getSomethingJSON(
+                        Constants.url + Constants.asistencia,
+                        Request.Method.POST,
+                        json,
+                        headers,
+                        this
+                );
             }
         }
     }
@@ -1289,6 +1343,43 @@ public class CameraFragment extends Fragment
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         }
+    }
+
+    @Override
+    public void mostrarDatos(String datos) {
+
+    }
+
+    @Override
+    public void mostrarDatos(JSONObject datos) {
+        Log.i("DATA", datos.toString());
+        final Activity activity = getActivity();
+        if(datos.has("validado")){
+            try {
+                boolean val = (boolean) datos.get("validado");
+                if (val) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progress.setValid();
+                        }
+                    });
+                } else {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progress.setInvalid();
+                        }
+                    });
+                }
+                unlockFocus();
+            }
+            catch(JSONException jsone)
+            {
+
+            }
+        }
+
     }
 
     /**

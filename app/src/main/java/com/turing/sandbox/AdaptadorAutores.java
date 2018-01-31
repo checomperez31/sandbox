@@ -8,10 +8,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.android.volley.Request;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +37,8 @@ public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.View
             headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(this.context).getToken());
             Comunicaciones com = new Comunicaciones(this.context);
             com.getSomethingString(Constants.url + Constants.autores,
-                    new HashMap<String, String>(),
+                    Request.Method.POST,
+                    new JSONObject(),
                     headers,
                     this
             );
@@ -74,6 +77,11 @@ public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.View
         catch (JSONException jsone){
             Log.i("JSON", jsone.getMessage());
         }
+
+    }
+
+    @Override
+    public void mostrarDatos(JSONObject datos) {
 
     }
 

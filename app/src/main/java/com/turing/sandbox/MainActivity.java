@@ -64,15 +64,6 @@ public class MainActivity extends AppCompatActivity
 
          */
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -82,12 +73,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        blankFragment = new BlankFragment();
-        editTextFragment = new EditTextFragment();
-        restFragment = new RESTFragment();
-        fragmentAutores = new ListaAutores();
-
-        getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, blankFragment).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, BlankFragment.newInstance()).commit();
     }
 
     @Override
@@ -129,17 +115,18 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
+        getSupportActionBar().show();
         if (id == R.id.nav_camera) {
-            transaction.replace(R.id.FragmentContent, blankFragment, "Blank Fragment");
+            transaction.replace(R.id.FragmentContent, BlankFragment.newInstance(), "Blank Fragment");
         } else if (id == R.id.nav_gallery) {
-            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
+            transaction.replace(R.id.FragmentContent, EditTextFragment.newInstance(), "Fragment ET");
         } else if (id == R.id.nav_slideshow) {
-            transaction.replace(R.id.FragmentContent, restFragment, "GET");
+            transaction.replace(R.id.FragmentContent, RESTFragment.newInstance(), "GET");
         } else if (id == R.id.nav_manage) {
-            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
+            transaction.replace(R.id.FragmentContent, ListaAutores.newInstance(), "Autores");
         } else if (id == R.id.nav_share) {
-
+            getSupportActionBar().hide();
+            transaction.replace(R.id.FragmentContent, CameraFragment.newInstance(), "Camera");
         } else if (id == R.id.nav_send) {
 
         }

@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.android.volley.Request;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -26,7 +28,7 @@ import java.util.Map;
  * Use the {@link RESTFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RESTFragment extends Fragment implements InterfaceLogin{
+public class RESTFragment extends Fragment implements InterfaceData{
     Button btnRest;
     TextInputEditText usuario, password;
     // TODO: Rename parameter arguments, choose names that match
@@ -48,16 +50,12 @@ public class RESTFragment extends Fragment implements InterfaceLogin{
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment RESTFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static RESTFragment newInstance(String param1, String param2) {
+    public static RESTFragment newInstance() {
         RESTFragment fragment = new RESTFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -66,8 +64,6 @@ public class RESTFragment extends Fragment implements InterfaceLogin{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -97,6 +93,7 @@ public class RESTFragment extends Fragment implements InterfaceLogin{
                     headers.put("Content-type", "application/json");
                     Comunicaciones com = new Comunicaciones(getContext());
                     com.getSomethingJSON(Constants.url + Constants.autenticar,
+                            Request.Method.POST,
                             new JSONObject(params),
                             headers,
                             RESTFragment.this
@@ -132,7 +129,12 @@ public class RESTFragment extends Fragment implements InterfaceLogin{
     }
 
     @Override
-    public void obtenerToken(JSONObject json) {
+    public void mostrarDatos(String datos) {
+
+    }
+
+    @Override
+    public void mostrarDatos(JSONObject datos) {
 
     }
 
