@@ -40,6 +40,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
@@ -55,6 +56,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -106,7 +108,8 @@ public class CameraFragment extends Fragment
     int centerx, centery;
     private boolean mAutoFocusSupported = false;
     private int fotoRotation = 0;
-    ProgressDialog progress;
+    private ProgressDialog progress;
+    private String[] cameras;
 
     private TextInputEditText etusuario;
 
@@ -156,6 +159,8 @@ public class CameraFragment extends Fragment
      * Max preview height that is guaranteed by Camera2 API
      */
     private static final int MAX_PREVIEW_HEIGHT = 1080;
+
+    private int usuario;
 
     /**
      * {@link TextureView.SurfaceTextureListener} handles several lifecycle events on a
@@ -220,7 +225,6 @@ public class CameraFragment extends Fragment
                     Paint paint = new Paint();
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(5);
-                    paint.setColor(Color.RED);
                     /*Log.d("DIM", "CanvasH " + canvasHeight +
                     "\nCanvasW " + canvasWidth +
                     "\nCameraH " + cameraHeight +
@@ -232,20 +236,7 @@ public class CameraFragment extends Fragment
                     "\nFaceT " + rectangleFace.top +
                     "\nFaceB " + rectangleFace.bottom +
                                     "\nRotacionCanvas " + rotationCanvas +
-                                    "\nSensorOr " + mSensorOrientation
-                    );*/
-                    float tempX = left - xc;
-                    float tempY = top - yc;
-
-                    // rotamos el rectangulo de la cara
-                    float rotatedX = (float)(tempX*Math.cos(Math.toRadians(90)) - tempY*Math.sin(Math.toRadians(90)));
-                    float rotatedY = (float)(tempX*Math.sin(Math.toRadians(90)) + tempY*Math.cos(Math.toRadians(90)));
-
-                    //aplicamos loas nuevas coordenadas
-                    float x = rotatedX + xc;
-                    float y = rotatedY + yc;
-                    float x2 = x - (bottom - top);
-                    float y2 = y + (right - left);
+                                    "\nSensorOr " + mSensorOrientation*/
                     float[] alto, ancho;
                     alto = new float[3];
                     ancho = new float[3];
@@ -254,11 +245,9 @@ public class CameraFragment extends Fragment
                         ancho[i] = ((anchosFotos[i] * canvasWidth)/cameraWidth) * mult;
                     }
                     if(displayRotation == 0){
-                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
-                        paint.setColor(Color.MAGENTA);
-                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), paint);
-                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), paint);
-                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), paint);
+                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), greenPaint);
+                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), greenPaint);
+                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), greenPaint);
 
                         if(mSensorOrientation == 270){
                             centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
@@ -271,11 +260,9 @@ public class CameraFragment extends Fragment
                         }
                         //arriba, izquierda, abajo, derecha
                     }else if(displayRotation == 1){
-                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
-                        paint.setColor(Color.MAGENTA);
-                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), paint);
-                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), paint);
-                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), paint);
+                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), greenPaint);
+                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), greenPaint);
+                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), greenPaint);
 
                         if(mSensorOrientation == 270){
                             centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
@@ -290,9 +277,9 @@ public class CameraFragment extends Fragment
                     }else if(displayRotation == 2){
                         //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
                         paint.setColor(Color.MAGENTA);
-                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), paint);
-                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), paint);
-                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), paint);
+                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), greenPaint);
+                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), greenPaint);
+                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), greenPaint);
 
                         if(mSensorOrientation == 270){
                             centery = ((xc * cameraWidth)/canvasWidth);
@@ -305,11 +292,9 @@ public class CameraFragment extends Fragment
                         }
                         //arriba. derecha, abajo, izquierda
                     }else{
-                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
-                        paint.setColor(Color.MAGENTA);
-                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), paint);
-                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), paint);
-                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), paint);
+                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), greenPaint);
+                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), greenPaint);
+                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), greenPaint);
 
                         if(mSensorOrientation == 270){
                             centerx = ((xc * cameraWidth)/canvasWidth);
@@ -322,20 +307,10 @@ public class CameraFragment extends Fragment
                         }
                         //derecha, abajo, izquierda, arriba
                     }
-                    //currentCanvas.drawRect(left, top, right, bottom, greenPaint);
-                    //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
                     paint.setColor(Color.RED);
                     currentCanvas.drawLine(xc,0, xc, canvasHeight, paint);
                     paint.setColor(Color.BLUE);
                     currentCanvas.drawLine(0, yc, canvasWidth, yc, paint);
-
-
-                    /*currentCanvas.drawLine(0,rectTop, canvasWidth, rectTop, paint);//X
-                    paint.setColor(Color.YELLOW);
-                    currentCanvas.drawLine(rectLeft, 0, rectLeft, canvasHeight, paint);
-                    paint.setColor(Color.CYAN);
-                    currentCanvas.drawLine(0, rectBottom, canvasWidth, rectBottom, paint);//X
-                    currentCanvas.restore();*/
                 }
                 else{
 
@@ -640,27 +615,31 @@ public class CameraFragment extends Fragment
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.camera_fragment, container, false);
+        View view = inflater.inflate(R.layout.camera_fragment, container, false);
+        etusuario = view.findViewById(R.id.cam_etusuario);
+        return view;
     }
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
-        view.findViewById(R.id.info).setOnClickListener(this);
-        view.findViewById(R.id.btn_rotar).setOnClickListener(this);
         mTextureView = view.findViewById(R.id.texture);
         mSquareView = view.findViewById(R.id.face_view);
         mSquareView.setZOrderOnTop(true);
         mSquareView.getHolder().setFormat(
                 PixelFormat.TRANSPARENT); //remove black background from view
+
         greenPaint = new Paint();
         greenPaint.setColor(Color.GREEN);
         greenPaint.setStyle(Paint.Style.STROKE);
         greenPaint.setStrokeWidth(4);
-
-        etusuario = view.findViewById(R.id.cam_etusuario);
     }
 
     @Override
@@ -681,6 +660,8 @@ public class CameraFragment extends Fragment
 
         mFile = new File(mediaStorageDir.toString() + File.separator + "pic.jpg");
 
+
+        if(savedInstanceState != null)restoreState(savedInstanceState);
     }
 
     @Override
@@ -737,7 +718,8 @@ public class CameraFragment extends Fragment
         Activity activity = getActivity();
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
-            for (String cameraId : manager.getCameraIdList()) {
+            cameras = manager.getCameraIdList();
+            for (String cameraId : cameras) {
                 characteristics = manager.getCameraCharacteristics(cameraId);
 
                 // We don't use a front facing camera in this sample.
@@ -1304,37 +1286,6 @@ public class CameraFragment extends Fragment
                 }
                 break;
             }
-            case R.id.info: {
-                Activity activity = getActivity();
-                if (null != activity) {
-                    new AlertDialog.Builder(activity)
-                            .setMessage("Mas permisos")
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show();
-                }
-                break;
-            }
-            case R.id.btn_rotar:{
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Content-type", "application/json");
-                JSONObject json = new JSONObject();
-                try{
-                    json.put("fecha", "hoy");
-                    json.put("ubicacion", "ubicacion");
-                }
-                catch(JSONException jsone){
-
-                }
-
-                Comunicaciones com = new Comunicaciones(getContext());
-                com.getSomethingJSON(
-                        Constants.url + Constants.asistencia,
-                        Request.Method.POST,
-                        json,
-                        headers,
-                        this
-                );
-            }
         }
     }
 
@@ -1502,6 +1453,45 @@ public class CameraFragment extends Fragment
                             })
                     .create();
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        saveState(outState);
+        super.onSaveInstanceState(outState);
+        Log.i("RESTORE", "se ha volteado la pantalla" + outState.getString("USUARIO"));
+    }
+
+    /*private void saveStateToArguments(Bundle savedState) {
+        if (getView() != null)
+            savedState = saveState();
+        if (savedState != null) {
+            Bundle b = getArguments();
+            if (b != null)
+                b.putBundle("internalSavedViewState8954201239547", savedState);
+        }
+    }*/
+
+    private void saveState(Bundle state) {
+        // For Example
+        state.putString("USUARIO", etusuario.getText().toString());
+        onSaveState(state);
+    }
+
+    protected void onSaveState(Bundle outState) {
+
+    }
+
+    private void restoreState(Bundle savedState) {
+        Log.i("aAAA", savedState.getString("USUARIO"));
+        etusuario.setText("la wea fome qlo");
+        Log.i("OBJ2", etusuario.toString() +"  "+ etusuario.getText().toString() + savedState.getString("USUARIO") + usuario);
+
+        onRestoreState(savedState);
+    }
+
+    protected void onRestoreState(Bundle savedInstanceState) {
+
     }
 
 }

@@ -4,7 +4,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,6 +28,8 @@ public class MainActivity extends AppCompatActivity
     EditTextFragment editTextFragment;
     RESTFragment restFragment;
     ListaAutores fragmentAutores;
+    CameraFragment cameraFragment;
+    int id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +77,17 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        cameraFragment = (CameraFragment) getSupportFragmentManager().findFragmentByTag("Camera");
+
+        blankFragment = new BlankFragment();
+        fragmentAutores = ListaAutores.newInstance();
+        editTextFragment = EditTextFragment.newInstance();
+        restFragment = new RESTFragment();
+
+        if(cameraFragment == null) {
+            cameraFragment = new CameraFragment();
+        }
+
         getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, BlankFragment.newInstance()).commit();
     }
 
@@ -112,21 +127,21 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        id = item.getItemId();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         getSupportActionBar().show();
         if (id == R.id.nav_camera) {
-            transaction.replace(R.id.FragmentContent, BlankFragment.newInstance(), "Blank Fragment");
+            transaction.replace(R.id.FragmentContent, blankFragment, "Blank Fragment");
         } else if (id == R.id.nav_gallery) {
-            transaction.replace(R.id.FragmentContent, EditTextFragment.newInstance(), "Fragment ET");
+            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
         } else if (id == R.id.nav_slideshow) {
-            transaction.replace(R.id.FragmentContent, RESTFragment.newInstance(), "GET");
+            transaction.replace(R.id.FragmentContent, restFragment, "GET");
         } else if (id == R.id.nav_manage) {
-            transaction.replace(R.id.FragmentContent, ListaAutores.newInstance(), "Autores");
+            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
         } else if (id == R.id.nav_share) {
             getSupportActionBar().hide();
-            transaction.replace(R.id.FragmentContent, CameraFragment.newInstance(), "Camera");
+            transaction.replace(R.id.FragmentContent, cameraFragment, "Camera");
         } else if (id == R.id.nav_send) {
 
         }
@@ -139,7 +154,44 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        id = savedInstanceState.getInt("ID");
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (id == R.id.nav_camera) {
+            transaction.replace(R.id.FragmentContent, blankFragment, "Blank Fragment");
+        } else if (id == R.id.nav_gallery) {
+            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
+        } else if (id == R.id.nav_slideshow) {
+            transaction.replace(R.id.FragmentContent, restFragment, "GET");
+        } else if (id == R.id.nav_manage) {
+            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
+        } else if (id == R.id.nav_share) {
+            getSupportActionBar().hide();
+            transaction.replace(R.id.FragmentContent, cameraFragment, "Camera");
+        }
+        transaction.commit();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("ID", id);
+        super.onSaveInstanceState(outState);
     }
 }
