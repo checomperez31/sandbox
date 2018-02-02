@@ -20,6 +20,11 @@
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
             android:title="Listado Autores" />
+        <item
+            android:id="@+id/nav_asistencia"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Asistencias"
+            ></item>
     </group>
 
     <item android:title="Communicate">

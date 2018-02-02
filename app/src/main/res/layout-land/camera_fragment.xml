@@ -9,21 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/cam_tilusuario"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/cam_etusuario"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Nombre de Usuario"/>
-
-        </android.support.design.widget.TextInputLayout>
-
         <FrameLayout
-            android:layout_below="@+id/cam_tilusuario"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/black">
@@ -42,46 +28,22 @@
 
         </FrameLayout>
 
+        <ImageButton
+            android:id="@+id/cam_btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/ic_back"
+            android:tint="@android:color/white"
+            style="@android:style/Widget.Material.Light.Button.Borderless"/>
+
         <RelativeLayout
             android:id="@+id/control"
             android:layout_width="110dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
-            android:background="#01000000"
-            android:layout_below="@+id/cam_tilusuario">
-
-            <RelativeLayout
-                android:id="@+id/layout_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:visibility="gone">
-
-                <ProgressBar
-                    android:id="@+id/progress_face"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"/>
-
-                <TextView
-                    android:layout_below="@+id/progress_face"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    android:text="Detectando Rostro"/>
-
-            </RelativeLayout>
-
-            <ImageButton
-                android:id="@+id/camera_downet"
-                style="@android:style/Widget.Material.Light.Button.Borderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_down"
-                android:tint="@android:color/white"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                />
+            android:background="#01000000">
 
             <ImageButton
                 android:id="@+id/picture"

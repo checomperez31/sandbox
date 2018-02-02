@@ -1,0 +1,51 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.turing.sandbox.FragmentAsistencias">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/asistencia_textousuario"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ingresa tu numero de usuario"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"
+            android:layout_centerHorizontal="true"
+            />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/asistencia_tilusuario"
+            android:layout_below="@+id/asistencia_textousuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Numero de usuario"
+            >
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/asistencia_etusuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:inputType="number"
+                />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/asistencias_btnRegistro"
+            android:layout_below="@+id/asistencia_tilusuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registrar"/>
+
+    </RelativeLayout>
+
+</FrameLayout>

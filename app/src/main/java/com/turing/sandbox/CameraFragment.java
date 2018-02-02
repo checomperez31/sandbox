@@ -34,18 +34,16 @@ import android.hardware.camera2.params.Face;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Base64;
 import android.util.Log;
@@ -56,7 +54,6 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -110,8 +107,9 @@ public class CameraFragment extends Fragment
     private int fotoRotation = 0;
     private ProgressDialog progress;
     private String[] cameras;
+    private int displayRotation;
 
-    private TextInputEditText etusuario;
+    private CameraFragment.OnFragmentInteractionListener mListener;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -224,8 +222,8 @@ public class CameraFragment extends Fragment
                     int yc = top + ((bottom - top)/2);
                     Paint paint = new Paint();
                     paint.setStyle(Paint.Style.STROKE);
-                    paint.setStrokeWidth(5);
-                    /*Log.d("DIM", "CanvasH " + canvasHeight +
+                    paint.setStrokeWidth(2);
+                    Log.d("DIM", "CanvasH " + canvasHeight +
                     "\nCanvasW " + canvasWidth +
                     "\nCameraH " + cameraHeight +
                     "\nCameraW " + cameraWidth +
@@ -236,7 +234,9 @@ public class CameraFragment extends Fragment
                     "\nFaceT " + rectangleFace.top +
                     "\nFaceB " + rectangleFace.bottom +
                                     "\nRotacionCanvas " + rotationCanvas +
-                                    "\nSensorOr " + mSensorOrientation*/
+                                    "\nSensorOr " + mSensorOrientation +
+                                    "\nSensorOr " + displayRotation
+                    );
                     float[] alto, ancho;
                     alto = new float[3];
                     ancho = new float[3];
@@ -610,6 +610,16 @@ public class CameraFragment extends Fragment
         }
     }
 
+    public CameraFragment(){
+
+    }
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        this.usuario = args.getInt("isUser");
+    }
+
     public static CameraFragment newInstance() {
         return new CameraFragment();
     }
@@ -623,13 +633,13 @@ public class CameraFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.camera_fragment, container, false);
-        etusuario = view.findViewById(R.id.cam_etusuario);
         return view;
     }
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
+        view.findViewById(R.id.cam_btnBack).setOnClickListener(this);
         mTextureView = view.findViewById(R.id.texture);
         mSquareView = view.findViewById(R.id.face_view);
         mSquareView.setZOrderOnTop(true);
@@ -639,7 +649,7 @@ public class CameraFragment extends Fragment
         greenPaint = new Paint();
         greenPaint.setColor(Color.GREEN);
         greenPaint.setStyle(Paint.Style.STROKE);
-        greenPaint.setStrokeWidth(4);
+        greenPaint.setStrokeWidth(2);
     }
 
     @Override
@@ -753,7 +763,7 @@ public class CameraFragment extends Fragment
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
-                int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+                displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
                 //noinspection ConstantConditions
                 mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 boolean swappedDimensions = false;
@@ -801,6 +811,8 @@ public class CameraFragment extends Fragment
                     default:
                         Log.e(TAG, "Display rotation is invalid: " + displayRotation);
                 }
+
+                Log.e(TAG, "Display rotation: " + displayRotation);
 
                 Point displaySize = new Point();
                 activity.getWindowManager().getDefaultDisplay().getSize(displaySize);
@@ -1208,7 +1220,7 @@ public class CameraFragment extends Fragment
                     try{
                         json.put("fecha", "2018-01-10");
                         json.put("ubicacion", "ubicacion");
-                        json.put("asistenciasuserId", etusuario.getText().toString());
+                        json.put("asistenciasuserId", usuario);
                         json.put("imagen", base64Image);
                     }
                     catch(JSONException jsone){
@@ -1273,7 +1285,7 @@ public class CameraFragment extends Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                if(!etusuario.getText().toString().trim().equals("")){
+                if(usuario > 0){
                     takePicture();
                 }else{
                     Activity activity = getActivity();
@@ -1284,6 +1296,10 @@ public class CameraFragment extends Fragment
                                 .show();
                     }
                 }
+                break;
+            }
+            case R.id.cam_btnBack:{
+                mListener.onCallBack(usuario);
                 break;
             }
         }
@@ -1459,7 +1475,6 @@ public class CameraFragment extends Fragment
     public void onSaveInstanceState(Bundle outState) {
         saveState(outState);
         super.onSaveInstanceState(outState);
-        Log.i("RESTORE", "se ha volteado la pantalla" + outState.getString("USUARIO"));
     }
 
     /*private void saveStateToArguments(Bundle savedState) {
@@ -1474,7 +1489,6 @@ public class CameraFragment extends Fragment
 
     private void saveState(Bundle state) {
         // For Example
-        state.putString("USUARIO", etusuario.getText().toString());
         onSaveState(state);
     }
 
@@ -1483,15 +1497,35 @@ public class CameraFragment extends Fragment
     }
 
     private void restoreState(Bundle savedState) {
-        Log.i("aAAA", savedState.getString("USUARIO"));
-        etusuario.setText("la wea fome qlo");
-        Log.i("OBJ2", etusuario.toString() +"  "+ etusuario.getText().toString() + savedState.getString("USUARIO") + usuario);
-
         onRestoreState(savedState);
     }
 
     protected void onRestoreState(Bundle savedInstanceState) {
 
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof FragmentAsistencias.OnFragmentInteractionListener) {
+            mListener = (CameraFragment.OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
+
+        void onCallBack(int UserId);
     }
 
 }
