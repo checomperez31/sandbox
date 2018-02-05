@@ -21,6 +21,10 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -54,6 +58,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -117,6 +122,93 @@ public class CameraFragment extends Fragment
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
+    private SensorManager mSensorManager;
+    private Sensor mOrientation;
+    float value_0 = -10000;
+    float value_1 = -10000;
+    private SensorEventListener mOrientationListener = new SensorEventListener() {
+        int orientation = -1;
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            int value ;
+            Activity activity = getActivity();
+            if(value_0 == event.values[0] && value_1==event.values[1]){
+                return;
+            }
+//            Log.d("values:", "values:" + event.values[0]+", "+event.values[1]);
+            if (event.values[1] > 0 && event.values[0] == 0) {
+                value = Surface.ROTATION_0;//portrait
+                if (orientation != value) {
+                    Log.d("orientation", "portrait  + update");
+                    getView().findViewById(R.id.cam_btnBack).setRotation(0);
+                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
+                    params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                }
+                orientation = value;
+                Log.d("orientation", "portrait ");
+            }
+
+
+            if (event.values[1] < 0 && event.values[0] == 0) {
+                value = Surface.ROTATION_180;//portrait reverse
+                if (orientation != value) {
+                    Log.d("orientation", "portrait reverse + update");
+                    getView().findViewById(R.id.cam_btnBack).setRotation(180);
+                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
+                    params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                }
+                orientation = value;
+                Log.d("orientation", "portrait reverse");
+            }
+
+            if (event.values[0] > 0 && event.values[1] == 0) {
+                value = Surface.ROTATION_90;//portrait reverse
+                if (orientation != value) {
+                    Log.d("orientation", "landscape  + update");
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            getView().findViewById(R.id.cam_btnBack).setRotation(90);
+                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
+                            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                            params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                            getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                        }
+                    });
+                }
+                orientation = value;
+                Log.d("orientation", "landscape");
+            }
+
+            if (event.values[0] < 0 && event.values[1] == 0) {
+                value = Surface.ROTATION_270;//portrait reverse
+                if (orientation != value) {
+                    Log.d("orientation", "landscape  + update");
+                    getView().findViewById(R.id.cam_btnBack).setRotation(270);
+                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
+                    params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                }
+                orientation = value;
+                Log.d("orientation", "landscape reverse");
+            }
+
+            value_0=event.values[0];
+            value_1=event.values[1];
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {
+
+        }
+    };
+
 
     /**
      * Tag for the {@link Log}.
@@ -192,7 +284,7 @@ public class CameraFragment extends Fragment
             if(currentCanvas != null){
                 currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 if (detectedFace != null && rectangleFace.height() > 0) {
-                    int displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+                    displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
                     int mult = 1;
                     if(displayRotation == 0 || displayRotation == 2){
                         mult = 2;
@@ -627,6 +719,9 @@ public class CameraFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mSensorManager = (SensorManager)getActivity().getSystemService(Context.SENSOR_SERVICE);
+        mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
 
     @Override
@@ -687,6 +782,7 @@ public class CameraFragment extends Fragment
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
+        mSensorManager.registerListener(mOrientationListener, mOrientation, SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -694,6 +790,9 @@ public class CameraFragment extends Fragment
         closeCamera();
         stopBackgroundThread();
         super.onPause();
+        if(mOrientation != null){
+            mSensorManager.unregisterListener(mOrientationListener);
+        }
     }
 
     private void requestCameraPermission() {

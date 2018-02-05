@@ -207,6 +207,7 @@ public class MainActivity extends AppCompatActivity
         );
         showCamera = true;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
         Bundle args = new Bundle();
         args.putInt("IdUser", userId);
         cameraFragment = CameraFragment.newInstance();
@@ -223,7 +224,7 @@ public class MainActivity extends AppCompatActivity
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
         showCamera = false;
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias").commit();
     }
 
@@ -272,9 +273,10 @@ public class MainActivity extends AppCompatActivity
         super.onConfigurationChanged(newConfig);
         // Checks the orientation of the screen
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+            Log.i("OR", "LAND");
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+            Log.i("OR", "PORT");
         }
     }
 }
