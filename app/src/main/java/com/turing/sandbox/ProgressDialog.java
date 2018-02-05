@@ -2,14 +2,17 @@ package com.turing.sandbox;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
@@ -23,9 +26,16 @@ public class ProgressDialog extends Dialog {
     ImageView icono;
     Drawable valido, invalido;
     Button btnOk;
+    int displayRotation = 0;
 
     public ProgressDialog(Context context){
         super(context);
+        create();
+    }
+
+    public ProgressDialog(Context context, int displayRotation){
+        super(context);
+        this.displayRotation = displayRotation;
         create();
     }
 
@@ -33,7 +43,12 @@ public class ProgressDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.progress_dialog_alert);
+        if(displayRotation == 0){
+            setContentView(R.layout.progress_dialog_alert);
+        }else{
+            setContentView(R.layout.progress_dialog_alert_land);
+        }
+
         setCancelable(false);
         mensaje = findViewById(R.id.dialog_mensaje);
         progress = findViewById(R.id.dialog_progressbar);

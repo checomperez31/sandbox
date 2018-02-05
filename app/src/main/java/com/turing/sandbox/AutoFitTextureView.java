@@ -52,8 +52,8 @@ public class AutoFitTextureView extends TextureView {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
         Log.i("SIZES", width + " " + height);
-        if (0 == mRatioWidth || 0 == mRatioHeight) {
-            setMeasuredDimension(width, height);
+        if (width > height) {//landscap
+            setMeasuredDimension(height, (height*4)/3);
         } else {
             setMeasuredDimension(width, (width * 4)/3);
         }

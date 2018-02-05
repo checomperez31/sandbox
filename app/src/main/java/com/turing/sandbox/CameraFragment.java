@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -38,6 +39,7 @@ import android.hardware.camera2.params.Face;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -113,6 +115,8 @@ public class CameraFragment extends Fragment
     private ProgressDialog progress;
     private String[] cameras;
     private int displayRotation;
+    private int accelerometerRotation = 0;
+    private int deviceRotation = 0;
 
     private CameraFragment.OnFragmentInteractionListener mListener;
 
@@ -125,19 +129,19 @@ public class CameraFragment extends Fragment
 
     private SensorManager mSensorManager;
     private Sensor mOrientation;
-    float value_0 = -10000;
-    float value_1 = -10000;
     private SensorEventListener mOrientationListener = new SensorEventListener() {
         int orientation = -1;
         @Override
-        public void onSensorChanged(SensorEvent event) {
+        public void onSensorChanged(SensorEvent event){
             int value ;
             Activity activity = getActivity();
-            if(value_0 == event.values[0] && value_1==event.values[1]){
+            /*Log.d("orientation", event.sensor.getName() + "\n" + event.sensor.getType()
+             + "\n" + ((int)event.values[0]) + "\n" + ((int)event.values[1]) + "\n" + ((int)event.values[2]));*/
+            if(Sensor.TYPE_ACCELEROMETER != event.sensor.getType()){
                 return;
             }
 //            Log.d("values:", "values:" + event.values[0]+", "+event.values[1]);
-            if (event.values[1] > 0 && event.values[0] == 0) {
+            if ((int)event.values[1] > 0 && (int)event.values[0] == 0) {
                 value = Surface.ROTATION_0;//portrait
                 if (orientation != value) {
                     Log.d("orientation", "portrait  + update");
@@ -146,13 +150,12 @@ public class CameraFragment extends Fragment
                     params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                    accelerometerRotation = 0;
+                    deviceRotation = 0;
                 }
                 orientation = value;
-                Log.d("orientation", "portrait ");
-            }
 
-
-            if (event.values[1] < 0 && event.values[0] == 0) {
+            }else if ((int)event.values[1] < 0 && (int)event.values[0] == 0) {
                 value = Surface.ROTATION_180;//portrait reverse
                 if (orientation != value) {
                     Log.d("orientation", "portrait reverse + update");
@@ -161,12 +164,12 @@ public class CameraFragment extends Fragment
                     params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                    accelerometerRotation = 180;
+                    deviceRotation = 180;
                 }
                 orientation = value;
-                Log.d("orientation", "portrait reverse");
-            }
 
-            if (event.values[0] > 0 && event.values[1] == 0) {
+            }else if ((int)event.values[0] > 0 && (int)event.values[1] == 0) {
                 value = Surface.ROTATION_90;//portrait reverse
                 if (orientation != value) {
                     Log.d("orientation", "landscape  + update");
@@ -178,29 +181,37 @@ public class CameraFragment extends Fragment
                             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                             params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
                             getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                            deviceRotation = 90;
+                            if(mSensorOrientation == 270){
+                                accelerometerRotation = 90;
+                            }else{
+                                accelerometerRotation = 270;
+                            }
+
                         }
                     });
                 }
                 orientation = value;
-                Log.d("orientation", "landscape");
-            }
 
-            if (event.values[0] < 0 && event.values[1] == 0) {
+            }else if ((int)event.values[0] < 0 && (int)event.values[1] == 0) {
                 value = Surface.ROTATION_270;//portrait reverse
                 if (orientation != value) {
-                    Log.d("orientation", "landscape  + update");
+                    Log.d("orientation", "landscape reverse + update");
                     getView().findViewById(R.id.cam_btnBack).setRotation(270);
                     RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
                     params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
+                    deviceRotation = 270;
+                    if(mSensorOrientation == 270){
+                        accelerometerRotation = 270;
+                    }else{
+                        accelerometerRotation = 90;
+                    }
                 }
                 orientation = value;
-                Log.d("orientation", "landscape reverse");
-            }
 
-            value_0=event.values[0];
-            value_1=event.values[1];
+            }
         }
 
         @Override
@@ -315,7 +326,7 @@ public class CameraFragment extends Fragment
                     Paint paint = new Paint();
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(2);
-                    Log.d("DIM", "CanvasH " + canvasHeight +
+                    /*Log.d("DIM", "CanvasH " + canvasHeight +
                     "\nCanvasW " + canvasWidth +
                     "\nCameraH " + cameraHeight +
                     "\nCameraW " + cameraWidth +
@@ -328,7 +339,7 @@ public class CameraFragment extends Fragment
                                     "\nRotacionCanvas " + rotationCanvas +
                                     "\nSensorOr " + mSensorOrientation +
                                     "\nSensorOr " + displayRotation
-                    );
+                    );*/
                     float[] alto, ancho;
                     alto = new float[3];
                     ancho = new float[3];
@@ -344,11 +355,11 @@ public class CameraFragment extends Fragment
                         if(mSensorOrientation == 270){
                             centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
                             centerx = cameraHeight - ((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 0;
+                            fotoRotation = getOrientation(accelerometerRotation + 270);
                         }else{
                             centery = ((xc * cameraWidth)/canvasWidth);
                             centerx = cameraHeight -((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 0;
+                            fotoRotation = getOrientation(accelerometerRotation + 90);
                         }
                         //arriba, izquierda, abajo, derecha
                     }else if(displayRotation == 1){
@@ -557,13 +568,16 @@ public class CameraFragment extends Fragment
                         detectedFace = face[0];
                         rectangleFace = detectedFace.getBounds();
                         if(takePictureOfFace){
+                            Log.i("AF", "tomar foto");
                             detectedFace = null;
                             takePictureOfFace = false;
 
                             //Comprobamos si la camara tiene soporte para autofocus o no
                             if (mAutoFocusSupported) {
+                                Log.i("AF", "lock focus");
                                 lockFocus();
                             } else {
+                                Log.i("AF", "capture still");
                                 captureStillPicture();
                             }
                         }
@@ -578,7 +592,7 @@ public class CameraFragment extends Fragment
                 }
                 case STATE_WAITING_LOCK: {
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
-
+                    Log.i("AF", "AFON" + afState);
                     if (afState == null) {
                         captureStillPicture();
                     } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
@@ -740,7 +754,6 @@ public class CameraFragment extends Fragment
         mSquareView.setZOrderOnTop(true);
         mSquareView.getHolder().setFormat(
                 PixelFormat.TRANSPARENT); //remove black background from view
-
         greenPaint = new Paint();
         greenPaint.setColor(Color.GREEN);
         greenPaint.setStyle(Paint.Style.STROKE);
@@ -942,6 +955,8 @@ public class CameraFragment extends Fragment
                         rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth,
                         maxPreviewHeight, largest);
 
+                Log.i("SIZE", "" + mPreviewSize);
+
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
                 int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -980,11 +995,13 @@ public class CameraFragment extends Fragment
                 mFlashSupported = available == null ? false : available;
 
                 int[] afAvailableModes = characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
-
+                Log.i("AF", afAvailableModes.toString() + "\n" + afAvailableModes.length);
                 if (afAvailableModes.length == 0 || (afAvailableModes.length == 1
                         && afAvailableModes[0] == CameraMetadata.CONTROL_AF_MODE_OFF)) {
+                    Log.i("AF", "AFON");
                     mAutoFocusSupported = false;
                 } else {
+                    Log.i("AF", "AFOFF");
                     mAutoFocusSupported = true;
                 }
 
@@ -1191,16 +1208,22 @@ public class CameraFragment extends Fragment
      */
     private void takePicture() {
         final Activity activity = getActivity();
-        progress = new ProgressDialog(getContext());
-
+        progress = new ProgressDialog(getContext(), deviceRotation);
+        takePictureOfFace = true;
+        progress.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+            }
+        });
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 progress.setMensaje("Validando");
+
                 progress.show();
             }
         });
-        takePictureOfFace = true;
+
     }
 
     /**
@@ -1257,10 +1280,11 @@ public class CameraFragment extends Fragment
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             setAutoFlash(captureBuilder);
+            Log.i("AF", "AFON");
 
             // Orientation
-            int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getOrientation(rotation));
+            Log.i("AF", "AFON" + fotoRotation);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, fotoRotation);
 
             CameraCaptureSession.CaptureCallback CaptureCallback
                     = new CameraCaptureSession.CaptureCallback() {
@@ -1271,9 +1295,9 @@ public class CameraFragment extends Fragment
                                                @NonNull TotalCaptureResult result) {
 
 
-                    //showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
+                    showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
                     //Notificamos al media scanner que se ha creado un archivo
-                    //MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
+                    MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
                     Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
 
                     Matrix matrix = new Matrix();
@@ -1305,7 +1329,8 @@ public class CameraFragment extends Fragment
                     Bitmap bitmapChico = Bitmap.createBitmap(bm, 0, 0,
                             bm.getWidth(), bm.getHeight(), matrix, false);
 
-                    bm.recycle();*/
+                    bm.recycle();
+                    */
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
                     byte[] b = baos.toByteArray();
@@ -1313,7 +1338,7 @@ public class CameraFragment extends Fragment
                     Log.d(TAG, mFile.toString());
                     Log.d(TAG, base64Image);
 
-                    Map<String, String> headers = new HashMap<>();
+                    /*Map<String, String> headers = new HashMap<>();
                     headers.put("Content-type", "application/json");
                     JSONObject json = new JSONObject();
                     try{
@@ -1333,7 +1358,14 @@ public class CameraFragment extends Fragment
                             json,
                             headers,
                             CameraFragment.this
-                    );
+                    );*/
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progress.setValid();
+                        }
+                    });
+                    unlockFocus();
                 }
             };
 
@@ -1356,7 +1388,7 @@ public class CameraFragment extends Fragment
         // We have to take that into account and rotate JPEG properly.
         // For devices with orientation of 90, we simply return our mapping from ORIENTATIONS.
         // For devices with orientation of 270, we need to rotate the JPEG 180 degrees.
-        return (ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360;
+        return rotation% 360;
     }
 
     /**
@@ -1384,7 +1416,9 @@ public class CameraFragment extends Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                if(usuario > 0){
+                Log.i("AF", "presionado el boton");
+                takePicture();
+                /*if(usuario > 0){
                     takePicture();
                 }else{
                     Activity activity = getActivity();
@@ -1394,7 +1428,7 @@ public class CameraFragment extends Fragment
                                 .setPositiveButton(android.R.string.ok, null)
                                 .show();
                     }
-                }
+                }*/
                 break;
             }
             case R.id.cam_btnBack:{

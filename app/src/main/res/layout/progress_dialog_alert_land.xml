@@ -5,21 +5,17 @@
     >
 
     <RelativeLayout
-        android:layout_width="300dp"
-        android:layout_height="400dp"
+        android:layout_width="400dp"
+        android:layout_height="300dp"
         android:layout_centerInParent="true"
         >
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true">
-
             <RelativeLayout
                 android:id="@+id/dialog_layout_controls"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                android:layout_centerInParent="true">
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:rotation="90">
 
                 <ProgressBar
                     android:id="@+id/dialog_progressbar"
@@ -37,25 +33,24 @@
 
             <TextView
                 android:id="@+id/dialog_mensaje"
-                android:layout_centerHorizontal="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
                 android:textSize="22sp"
                 android:textColor="@android:color/black"
-                android:layout_below="@+id/dialog_layout_controls"
                 android:text="Algun mensaje"
-                android:textAlignment="center"/>
-
-        </RelativeLayout>
+                android:layout_centerVertical="true"
+                android:textAlignment="center"
+                android:rotation="90"
+                android:layout_toLeftOf="@id/dialog_layout_controls"/>
 
         <Button
             android:id="@+id/dialog_btnOK"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:layout_alignParentBottom="true"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Ok"/>
+            android:text="Ok"
+            android:rotation="90"/>
 
     </RelativeLayout>
 
