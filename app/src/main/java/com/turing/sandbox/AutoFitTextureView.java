@@ -14,9 +14,6 @@ import java.util.concurrent.CancellationException;
 
 public class AutoFitTextureView extends TextureView {
 
-    private int mRatioWidth = 0;
-    private int mRatioHeight = 0;
-
     public AutoFitTextureView(Context context) {
         this(context, null);
     }
@@ -41,8 +38,6 @@ public class AutoFitTextureView extends TextureView {
         if (width < 0 || height < 0) {
             throw new IllegalArgumentException("Size cannot be negative.");
         }
-        mRatioWidth = width;
-        mRatioHeight = height;
         requestLayout();
     }
 

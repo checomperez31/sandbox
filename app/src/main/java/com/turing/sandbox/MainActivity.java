@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity
             cameraFragment = new CameraFragment();
             fragmentAsistencias = FragmentAsistencias.newInstance();
         }
-        getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, BlankFragment.newInstance()).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, fragmentAsistencias).commit();
     }
 
     @Override
@@ -164,7 +164,11 @@ public class MainActivity extends AppCompatActivity
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (id == R.id.nav_camera) {
-            transaction.replace(R.id.FragmentContent, blankFragment, "Blank Fragment");
+            if(!showCamera) {
+                transaction.replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias");
+            }else{
+                transaction.replace(R.id.FragmentContent, cameraFragment, "AsistCamera");
+            }
         } else if (id == R.id.nav_gallery) {
             transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
         } else if (id == R.id.nav_slideshow) {
@@ -172,11 +176,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_manage) {
             transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
         } else if (id == R.id.nav_asistencia) {
-            if(!showCamera) {
-                transaction.replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias");
-            }else{
-                transaction.replace(R.id.FragmentContent, cameraFragment, "AsistCamera");
-            }
+
         } else if (id == R.id.nav_share) {
             getSupportActionBar().hide();
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -250,14 +250,6 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().show();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if (id == R.id.nav_camera) {
-            transaction.replace(R.id.FragmentContent, blankFragment, "Blank Fragment");
-        } else if (id == R.id.nav_gallery) {
-            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
-        } else if (id == R.id.nav_slideshow) {
-            transaction.replace(R.id.FragmentContent, restFragment, "GET");
-        } else if (id == R.id.nav_manage) {
-            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
-        } else if (id == R.id.nav_asistencia) {
             if(!showCamera) {
                 transaction.replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias");
             }else{
@@ -268,6 +260,14 @@ public class MainActivity extends AppCompatActivity
                 );
                 transaction.replace(R.id.FragmentContent, cameraFragment, "AsistCamera");
             }
+        } else if (id == R.id.nav_gallery) {
+            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
+        } else if (id == R.id.nav_slideshow) {
+            transaction.replace(R.id.FragmentContent, restFragment, "GET");
+        } else if (id == R.id.nav_manage) {
+            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
+        } else if (id == R.id.nav_asistencia) {
+
         } else if (id == R.id.nav_share) {
             transaction.replace(R.id.FragmentContent, cameraFragment, "Camera");
         }
@@ -334,7 +334,7 @@ public class MainActivity extends AppCompatActivity
     private void showExplanation() {
         android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Permisos denegados");
-        builder.setMessage("Para usar las funciones de la app necesitas aceptar los permisos");
+        builder.setMessage("Para usar las funciones de la aplicación necesitas aceptar todos permisos");
         builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

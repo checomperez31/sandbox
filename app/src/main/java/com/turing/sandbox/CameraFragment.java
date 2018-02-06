@@ -109,7 +109,7 @@ public class CameraFragment extends Fragment
     private int rotationCanvas = 0;
     int[] anchosFotos = {600, 750, 900};
     int[] altosFotos = new int[3];
-    int centerx, centery;
+    int centerx, centery, izquierda, anchoImagenRecortada, arriba, altoImagenRecortada;
     private boolean mAutoFocusSupported = false;
     private int fotoRotation = 0;
     private ProgressDialog progress;
@@ -117,6 +117,7 @@ public class CameraFragment extends Fragment
     private int displayRotation;
     private int accelerometerRotation = 0;
     private int deviceRotation = 0;
+    private Size largest;
 
     private CameraFragment.OnFragmentInteractionListener mListener;
 
@@ -297,22 +298,34 @@ public class CameraFragment extends Fragment
                 if (detectedFace != null && rectangleFace.height() > 0) {
                     displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
                     int mult = 1;
-                    if(displayRotation == 0 || displayRotation == 2){
-                        mult = 2;
-                    }
-                    int canvasWidth = currentCanvas.getWidth();
-                    int canvasHeight = currentCanvas.getHeight();
+                    int canvasWidth, canvasHeight;
+                    canvasHeight = currentCanvas.getHeight();
+                    canvasWidth = currentCanvas.getWidth();
 
                     currentCanvas.save();
-                    currentCanvas.rotate(360 - rotationCanvas,canvasWidth / 2,canvasHeight / 2);
+                    currentCanvas.rotate(90,currentCanvas.getWidth() / 2,currentCanvas.getHeight() / 2);
 
                     int l = rectangleFace.left;
                     int t = rectangleFace.top;
                     int r = rectangleFace.right;
                     int b = rectangleFace.bottom;
-                    int left = (l * canvasWidth)/cameraWidth;
-                    int right = (r * canvasWidth)/cameraWidth;
-                    int top, bottom;
+
+                    int left, right, top, bottom, xc, yc;
+
+                    Paint paint = new Paint();
+                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setStrokeWidth(2);
+
+                    float[] alto, ancho;
+                    alto = new float[3];
+                    ancho = new float[3];
+                    for(int i = 0; i < anchosFotos.length; i++){
+                        alto[i] = ((altosFotos[i] * canvasHeight)/cameraHeight);
+                        ancho[i] = ((anchosFotos[i] * canvasWidth)/cameraWidth) * mult;
+                    }
+
+                    left = (l * canvasWidth)/cameraWidth;
+                    right = (r * canvasWidth)/cameraWidth;
                     //Relacion de aspecto 4:3
                     if(mSensorOrientation == 90){
                         top  = (t * canvasHeight)/cameraHeight;
@@ -321,102 +334,131 @@ public class CameraFragment extends Fragment
                         top  = canvasHeight - ((t * canvasHeight)/cameraHeight);
                         bottom = canvasHeight - ((b * canvasHeight)/cameraHeight);
                     }
-                    int xc = left + ((right-left)/2);
-                    int yc = top + ((bottom - top)/2);
-                    Paint paint = new Paint();
-                    paint.setStyle(Paint.Style.STROKE);
-                    paint.setStrokeWidth(2);
-                    /*Log.d("DIM", "CanvasH " + canvasHeight +
-                    "\nCanvasW " + canvasWidth +
-                    "\nCameraH " + cameraHeight +
-                    "\nCameraW " + cameraWidth +
-                    "\nFaceL " + rectangleFace.left +
-                    "\nFaceL " + left +
-                    "\nFaceR " + rectangleFace.right +
-                    "\nFaceR " + right +
-                    "\nFaceT " + rectangleFace.top +
-                    "\nFaceB " + rectangleFace.bottom +
-                                    "\nRotacionCanvas " + rotationCanvas +
-                                    "\nSensorOr " + mSensorOrientation +
-                                    "\nSensorOr " + displayRotation
-                    );*/
-                    float[] alto, ancho;
-                    alto = new float[3];
-                    ancho = new float[3];
-                    for(int i = 0; i < anchosFotos.length; i++){
-                        alto[i] = ((altosFotos[i] * canvasHeight)/cameraHeight);
-                        ancho[i] = ((anchosFotos[i] * canvasWidth)/cameraWidth) * mult;
+
+                    xc = left + ((right-left)/2);
+                    yc = top + ((bottom - top)/2);
+
+                    int iz, der, ar, ab;
+                    int dify, difx, derecha, abajo;
+                    dify = (int)((bottom - yc) * 1.5);
+                    difx = (int)((right - xc) * 1.5);
+
+                    switch(deviceRotation){
+                        case 0:{
+                            iz = xc - dify;
+                            der = xc + dify;
+                            ar = yc - difx;
+                            ab = yc + difx;
+                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
+                            fotoRotation = getOrientation(90);
+
+                            izquierda = (int)(cameraHeight - ((l + ((r - l)/2)) - (((b - t)/2) * 1.5)));
+                            arriba = (int)((t + ((b - t)/2)) - (((r - l)/2) * 1.5));
+                            derecha = (int)(cameraHeight - ((l + ((r - l)/2)) + (((b - t)/2) * 1.5)));
+                            abajo = (int)((t + ((b - t)/2)) + (((r - l)/2) * 1.5));
+
+                            izquierda = (izquierda * largest.getWidth())/cameraWidth;
+                            derecha = (derecha * largest.getWidth())/cameraWidth;
+                            arriba = (arriba * largest.getHeight())/cameraHeight;
+                            abajo = (abajo * largest.getHeight())/cameraHeight;
+
+                            anchoImagenRecortada = izquierda - derecha;
+                            altoImagenRecortada = abajo - arriba;
+                            break;
+                        }
+                        case 90:{
+                            iz = xc - difx;
+                            der = xc + difx;
+                            ar = yc - dify;
+                            ab = yc + dify;
+                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
+                            fotoRotation = getOrientation(0);
+
+                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
+                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.5));
+                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
+                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.5));
+
+                            izquierda = (izquierda * largest.getWidth())/cameraWidth;
+                            derecha = (derecha * largest.getWidth())/cameraWidth;
+                            arriba = (arriba * largest.getHeight())/cameraHeight;
+                            abajo = (abajo * largest.getHeight())/cameraHeight;
+
+                            anchoImagenRecortada = derecha - izquierda;
+                            altoImagenRecortada = abajo - arriba;
+                            break;
+                        }
+                        case 180:{
+                            iz = xc - dify;
+                            der = xc + dify;
+                            ar = yc - difx;
+                            ab = yc + difx;
+                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
+                            fotoRotation = getOrientation(270);
+
+                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
+                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.8));
+                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
+                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.8));
+                            break;
+                        }
+                        case 270:{
+                            iz = xc - difx;
+                            der = xc + difx;
+                            ar = yc - dify;
+                            ab = yc + dify;
+                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
+                            fotoRotation = getOrientation(180);
+
+                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
+                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.8));
+                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
+                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.8));
+                            break;
+                        }
+                        default:{
+                            iz = xc - difx;
+                            der = xc + difx;
+                            ar = yc - dify;
+                            ab = yc + dify;
+                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
+
+                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
+                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.8));
+                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
+                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.8));
+                            break;
+                        }
                     }
-                    if(displayRotation == 0){
-                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), greenPaint);
-                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), greenPaint);
-                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), greenPaint);
 
-                        if(mSensorOrientation == 270){
-                            centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
-                            centerx = cameraHeight - ((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = getOrientation(accelerometerRotation + 270);
-                        }else{
-                            centery = ((xc * cameraWidth)/canvasWidth);
-                            centerx = cameraHeight -((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = getOrientation(accelerometerRotation + 90);
-                        }
-                        //arriba, izquierda, abajo, derecha
-                    }else if(displayRotation == 1){
-                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), greenPaint);
-                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), greenPaint);
-                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), greenPaint);
+                    currentCanvas.drawRect(left, top, right, bottom, greenPaint);
 
-                        if(mSensorOrientation == 270){
-                            centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
-                            centery = ((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 180;
-                        }else{
-                            centerx = (xc * cameraWidth)/canvasWidth;
-                            centery = (yc * cameraHeight)/canvasHeight;
-                            fotoRotation = 0;
-                        }
-                        //izquierda abajo derecha arriba
-                    }else if(displayRotation == 2){
-                        //currentCanvas.drawRect(x2, y2, x, y, greenPaint);
-                        paint.setColor(Color.MAGENTA);
-                        currentCanvas.drawRect((xc + (alto[0]/2)), (yc - (ancho[0]/2)), (xc - (alto[0]/2)), (yc + (ancho[0]/2)), greenPaint);
-                        currentCanvas.drawRect((xc + (alto[1]/2)), (yc - (ancho[1]/2)), (xc - (alto[1]/2)), (yc + (ancho[1]/2)), greenPaint);
-                        currentCanvas.drawRect((xc + (alto[2]/2)), (yc - (ancho[2]/2)), (xc - (alto[2]/2)), (yc + (ancho[2]/2)), greenPaint);
 
-                        if(mSensorOrientation == 270){
-                            centery = ((xc * cameraWidth)/canvasWidth);
-                            centerx = ((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 0;
-                        }else{
-                            centery = cameraWidth - ((xc * cameraWidth)/canvasWidth);
-                            centerx = ((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 0;
-                        }
-                        //arriba. derecha, abajo, izquierda
-                    }else{
-                        currentCanvas.drawRect((xc - (ancho[0]/2)), (yc - (alto[0]/2)), (xc + (ancho[0]/2)), (yc + (alto[0]/2)), greenPaint);
-                        currentCanvas.drawRect((xc - (ancho[1]/2)), (yc - (alto[1]/2)), (xc + (ancho[1]/2)), (yc + (alto[1]/2)), greenPaint);
-                        currentCanvas.drawRect((xc - (ancho[2]/2)), (yc - (alto[2]/2)), (xc + (ancho[2]/2)), (yc + (alto[2]/2)), greenPaint);
+                    Log.d("DIM", "CanvasH " + canvasHeight +
+                            "\nCanvasW " + canvasWidth +
+                            "\nCameraH " + cameraHeight +
+                            "\nCameraW " + cameraWidth +
+                            "\nFaceL " + rectangleFace.left +
+                            "\nFaceL " + left +
+                            "\nFaceR " + rectangleFace.right +
+                            "\nFaceR " + right +
+                            "\nFaceT " + rectangleFace.top +
+                            "\nFaceB " + rectangleFace.bottom +
+                            "\nRotacionCanvas " + rotationCanvas +
+                            "\nSensorOr " + mSensorOrientation +
+                            "\nAcelerometroOr " + deviceRotation +
+                            "\narriba " + arriba +
+                            "\nabajo " + abajo +
+                            "\nizquierda " + izquierda +
+                            "\nderecha " + derecha
+                    );
 
-                        if(mSensorOrientation == 270){
-                            centerx = ((xc * cameraWidth)/canvasWidth);
-                            centery = cameraHeight -((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 180;
-                        }else{
-                            centerx = cameraWidth - ((xc * cameraWidth)/canvasWidth);
-                            centery = cameraHeight -((yc * cameraHeight)/canvasHeight);
-                            fotoRotation = 0;
-                        }
-                        //derecha, abajo, izquierda, arriba
-                    }
                     paint.setColor(Color.RED);
                     currentCanvas.drawLine(xc,0, xc, canvasHeight, paint);
                     paint.setColor(Color.BLUE);
                     currentCanvas.drawLine(0, yc, canvasWidth, yc, paint);
-                }
-                else{
-
+                    currentCanvas.drawText("Arriba", 0, 6, xc, top, greenPaint);
+                    currentCanvas.drawText("Izquierda", 0, 9, left, yc, greenPaint);
                 }
                 mSquareView.getHolder().unlockCanvasAndPost(currentCanvas);
             }
@@ -567,6 +609,9 @@ public class CameraFragment extends Fragment
                     if (face.length>0){
                         detectedFace = face[0];
                         rectangleFace = detectedFace.getBounds();
+                        //ojoIzquierdo = detectedFace.getMouthPosition();
+                        //ojoDerecho = detectedFace.getRightEyePosition();
+                        //Log.i(TAG, ojoIzquierdo.toString());
                         if(takePictureOfFace){
                             Log.i("AF", "tomar foto");
                             detectedFace = null;
@@ -862,7 +907,7 @@ public class CameraFragment extends Fragment
                 }
 
                 // For still image captures, we use the largest available size.
-                Size largest = Collections.max(
+                largest = Collections.max(
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
                 Log.i("SIZE", largest + "\n" + Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)));
@@ -1302,35 +1347,40 @@ public class CameraFragment extends Fragment
 
                     Matrix matrix = new Matrix();
                     matrix.postScale(1f, 1f);
-                    matrix.postRotate(fotoRotation);
+                    //matrix.postRotate(fotoRotation);
 
+                    Log.i("AF", "tamaños" + bm.getWidth()
+                            + "\n" + bm.getHeight()
+                            + "\n" + izquierda
+                            + "\n" + anchoImagenRecortada
+                            + "\n" + arriba
+                            + "\n" + altoImagenRecortada
+                    );
 
                     //write the bytes in file
-                    /*try {
-                        for(int i = 0; i < anchosFotos.length; i++){
-                            Bitmap bitmapChico = Bitmap.createBitmap(bm, (centerx - (anchosFotos[i]/2)), (centery - (altosFotos[i]/2)),
-                                        (anchosFotos[i]), ((altosFotos[i])), matrix, true);
-                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                            bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 , bos);
-                            byte[] bitmapdata = bos.toByteArray();
-                            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                                    File.separator + "MyCameraApp" + File.separator + "IMG" + (System.currentTimeMillis()/1000) + "_" + anchosFotos[0] +".png");
-                            FileOutputStream fos = new FileOutputStream(file);
-                            fos.write(bitmapdata);
-                            fos.flush();
-                            fos.close();
-                            MediaScannerConnection.scanFile (activity, new String[] {file.toString()}, null, null);
-                        }
-
+                    try {
+                        Bitmap bitmapChico = Bitmap.createBitmap(bm, izquierda, arriba,
+                                anchoImagenRecortada, altoImagenRecortada, matrix, true);
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 , bos);
+                        byte[] bitmapdata = bos.toByteArray();
+                        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
+                                File.separator + "MyCameraApp" + File.separator + "IMG" + (System.currentTimeMillis()/1000) + "_" + anchosFotos[0] +".png");
+                        FileOutputStream fos = new FileOutputStream(file);
+                        fos.write(bitmapdata);
+                        fos.flush();
+                        fos.close();
+                        MediaScannerConnection.scanFile (activity, new String[] {file.toString()}, null, null);
                     }
                     catch(IOException ioe){
 
                     }
-                    Bitmap bitmapChico = Bitmap.createBitmap(bm, 0, 0,
+                    /*Bitmap bitmapChico = Bitmap.createBitmap(bm, 0, 0,
                             bm.getWidth(), bm.getHeight(), matrix, false);
 
-                    bm.recycle();
-                    */
+                    bm.recycle();*/
+
+
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
                     byte[] b = baos.toByteArray();

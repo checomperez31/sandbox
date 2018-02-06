@@ -12,4 +12,5 @@ public class Constants {
     public static final String accountdata = "api/account";
     public static final String userdata = "api/users";
     public static final String asistencia = "api/faceasistencias";
+    public static final String imagenes = "api/imagenes";
 }
