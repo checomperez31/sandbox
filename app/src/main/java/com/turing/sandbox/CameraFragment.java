@@ -60,6 +60,10 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -93,7 +97,6 @@ public class CameraFragment extends Fragment
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
-    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
 
@@ -106,110 +109,111 @@ public class CameraFragment extends Fragment
     private int cameraHeight;
     private Face detectedFace;
     private Rect rectangleFace;
-    private int rotationCanvas = 0;
-    int[] anchosFotos = {600, 750, 900};
-    int[] altosFotos = new int[3];
-    int centerx, centery, izquierda, anchoImagenRecortada, arriba, altoImagenRecortada;
     private boolean mAutoFocusSupported = false;
     private int fotoRotation = 0;
     private ProgressDialog progress;
     private String[] cameras;
     private int displayRotation;
-    private int accelerometerRotation = 0;
     private int deviceRotation = 0;
     private Size largest;
 
-    private CameraFragment.OnFragmentInteractionListener mListener;
+    /**
+     * Variables del recuadro del rostro
+     */
+    int outLeft, outTop, outWidth, outHeight;
 
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 90);
-        ORIENTATIONS.append(Surface.ROTATION_90, 0);
-        ORIENTATIONS.append(Surface.ROTATION_180, 270);
-        ORIENTATIONS.append(Surface.ROTATION_270, 180);
-    }
+    private CameraFragment.OnFragmentInteractionListener mListener;
 
     private SensorManager mSensorManager;
     private Sensor mOrientation;
+    /**
+     * Sensor de acelerometro, con el detectamos los cambios en la orientacion para cambiar los iconos de la pantalla y el comportamiento de la camara
+     */
     private SensorEventListener mOrientationListener = new SensorEventListener() {
-        int orientation = -1;
+        int orientation = 0;
         @Override
         public void onSensorChanged(SensorEvent event){
-            int value ;
             Activity activity = getActivity();
-            /*Log.d("orientation", event.sensor.getName() + "\n" + event.sensor.getType()
-             + "\n" + ((int)event.values[0]) + "\n" + ((int)event.values[1]) + "\n" + ((int)event.values[2]));*/
             if(Sensor.TYPE_ACCELEROMETER != event.sensor.getType()){
                 return;
             }
-//            Log.d("values:", "values:" + event.values[0]+", "+event.values[1]);
+
             if ((int)event.values[1] > 0 && (int)event.values[0] == 0) {
-                value = Surface.ROTATION_0;//portrait
+                final int value = Surface.ROTATION_0;//portrait
                 if (orientation != value) {
                     Log.d("orientation", "portrait  + update");
-                    getView().findViewById(R.id.cam_btnBack).setRotation(0);
-                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
-                    params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                    getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
-                    accelerometerRotation = 0;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+
+                            rotateAnim.setDuration(500);
+                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
+                        }
+                    });
                     deviceRotation = 0;
                 }
                 orientation = value;
 
             }else if ((int)event.values[1] < 0 && (int)event.values[0] == 0) {
-                value = Surface.ROTATION_180;//portrait reverse
+                final int value = Surface.ROTATION_180;//portrait reverse
                 if (orientation != value) {
                     Log.d("orientation", "portrait reverse + update");
-                    getView().findViewById(R.id.cam_btnBack).setRotation(180);
-                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
-                    params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                    getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
-                    accelerometerRotation = 180;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+
+                            rotateAnim.setDuration(500);
+                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
+                        }
+                    });
                     deviceRotation = 180;
                 }
                 orientation = value;
 
             }else if ((int)event.values[0] > 0 && (int)event.values[1] == 0) {
-                value = Surface.ROTATION_90;//portrait reverse
+                final int value = Surface.ROTATION_90;//portrait reverse
                 if (orientation != value) {
                     Log.d("orientation", "landscape  + update");
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            getView().findViewById(R.id.cam_btnBack).setRotation(90);
-                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
-                            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                            params.removeRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                            getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
-                            deviceRotation = 90;
-                            if(mSensorOrientation == 270){
-                                accelerometerRotation = 90;
-                            }else{
-                                accelerometerRotation = 270;
-                            }
+                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
 
+                            rotateAnim.setDuration(500);
+                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
                         }
                     });
+                    deviceRotation = 90;
                 }
                 orientation = value;
 
             }else if ((int)event.values[0] < 0 && (int)event.values[1] == 0) {
-                value = Surface.ROTATION_270;//portrait reverse
+                final int value = Surface.ROTATION_270;//portrait reverse
                 if (orientation != value) {
                     Log.d("orientation", "landscape reverse + update");
-                    getView().findViewById(R.id.cam_btnBack).setRotation(270);
-                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getView().findViewById(R.id.cam_btnBack).getLayoutParams();
-                    params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                    getView().findViewById(R.id.cam_btnBack).setLayoutParams(params); //causes layout update
-                    deviceRotation = 270;
-                    if(mSensorOrientation == 270){
-                        accelerometerRotation = 270;
-                    }else{
-                        accelerometerRotation = 90;
-                    }
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
+                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
+                            rotateAnim.setInterpolator(new LinearInterpolator());
+                            rotateAnim.setDuration(500);
+                            getView().findViewById(R.id.cam_btnBack).setAnimation(rotateAnim);
+                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
+
+                        }
+                    });
                 }
+                deviceRotation = 270;
                 orientation = value;
 
             }
@@ -296,169 +300,175 @@ public class CameraFragment extends Fragment
             if(currentCanvas != null){
                 currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 if (detectedFace != null && rectangleFace.height() > 0) {
-                    displayRotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-                    int mult = 1;
-                    int canvasWidth, canvasHeight;
-                    canvasHeight = currentCanvas.getHeight();
-                    canvasWidth = currentCanvas.getWidth();
-
                     currentCanvas.save();
-                    currentCanvas.rotate(90,currentCanvas.getWidth() / 2,currentCanvas.getHeight() / 2);
+                    currentCanvas.rotate(mSensorOrientation,currentCanvas.getWidth() / 2,currentCanvas.getHeight() / 2);
 
+                    //Dimensiones del canvas (estas cambian dependiendo de la posicion del dispositivo)
+                    int canvasWidth, canvasHeight;
+
+                    canvasWidth = currentCanvas.getWidth();
+                    canvasHeight = currentCanvas.getHeight();
+
+                    //multiplicadores del tamaño
+                    double mx, my;
+                    //calculos previos dependientes de la rotacion
+                    switch(deviceRotation){
+                        case 0:{
+                            mx = 1.9;
+                            my = 1.5;
+                            break;
+                        }
+                        case 90:{
+                            mx = 1.5;
+                            my = 1.9;
+
+
+                            break;
+                        }
+                        case 180:{
+                            mx = 1.9;
+                            my = 1.5;
+                            break;
+                        }
+                        case 270:{
+                            mx = 1.5;
+                            my = 1.9;
+                            break;
+                        }
+                        default:{
+                            mx = 1.5;
+                            my = 1.5;
+                        }
+                    }
+
+                    //Dimensiones de la imagen final
+                    int finalWidth, finalHeight;
+                    finalWidth = largest.getWidth();
+                    finalHeight = largest.getHeight();
+
+                    //CALCULOS DEL ROSTRO CON SALIDA EN UN ARCHIVO
+
+                    //Dimensiones del  rectangulo de la cara
                     int l = rectangleFace.left;
                     int t = rectangleFace.top;
                     int r = rectangleFace.right;
                     int b = rectangleFace.bottom;
 
-                    int left, right, top, bottom, xc, yc;
+                    //Diferencia entre ejes del rectaangulo de la cara
+                    int difx, dify;
 
-                    Paint paint = new Paint();
-                    paint.setStyle(Paint.Style.STROKE);
-                    paint.setStrokeWidth(2);
+                    difx = (r - l)/2;
+                    dify = (b - t)/2;
 
-                    float[] alto, ancho;
-                    alto = new float[3];
-                    ancho = new float[3];
-                    for(int i = 0; i < anchosFotos.length; i++){
-                        alto[i] = ((altosFotos[i] * canvasHeight)/cameraHeight);
-                        ancho[i] = ((anchosFotos[i] * canvasWidth)/cameraWidth) * mult;
+                    //centros en x y y
+                    int outCenterx, outCentery;
+
+                    outCenterx = l + (difx);//La diferencia en x es igual la esquina derecha menos la esquina izquierda
+                    outCentery = t + (dify);//La diferencia en y es igual la esquina inferior menos la esquina superior
+
+                    //vaiables finales de la ubicacion del rostro
+                    int left, right, top, bottom;
+
+                    //calculamos las esquinas del rectangulo del rostro aumentando sus dimensiones
+                    left = (int)(outCenterx - (difx * mx));
+                    right = (int)(outCenterx + (difx * mx));
+                    top = (int)(outCentery - (dify * my));
+                    bottom = (int)(outCentery + (dify * my));
+
+                    //convertimos estas dimensiones a la resolucion final
+                    outLeft = (left * finalWidth)/cameraWidth;
+                    outTop = (top * finalHeight)/cameraHeight;
+                    outWidth = ((right - left) * finalWidth)/cameraWidth;
+                    outHeight = ((bottom - top) * finalHeight)/cameraHeight;
+
+                    Log.d("DIM", "\nCameraH " + cameraHeight +
+                                    "\nCameraW " + cameraWidth +
+                                    "\nFaceL " + rectangleFace.left +
+                                    "\nFaceR " + rectangleFace.right +
+                                    "\nFaceT " + rectangleFace.top +
+                                    "\nFaceB " + rectangleFace.bottom +
+                                    "\nResH " + finalHeight +
+                                    "\nResW " + finalWidth +
+                                    "\nFaceL " + left +
+                                    "\nFaceR " + right +
+                                    "\nFaceT " + top +
+                                    "\nFaceB " + bottom +
+                                    "\nSensorOr " + mSensorOrientation +
+                                    "\nDeviceRotation " + deviceRotation
+                    );
+
+                    if((left < 0) || (right > cameraWidth) || (top < 0) || (bottom > cameraHeight)){
+                        getView().findViewById(R.id.picture).setEnabled(false);
+                        getView().findViewById(R.id.picture).setAlpha(0.5f);
+                    }
+                    else{
+                        getView().findViewById(R.id.picture).setEnabled(true);
+                        getView().findViewById(R.id.picture).setAlpha(1f);
                     }
 
-                    left = (l * canvasWidth)/cameraWidth;
-                    right = (r * canvasWidth)/cameraWidth;
-                    //Relacion de aspecto 4:3
+                    //CALCULOS DEL RECTANGULO A DIBUJAR
+
+
+                    //calculamos los puntos del rectangulo a dibujar
+                    l = (l * canvasWidth)/cameraWidth;
+                    r = (r * canvasWidth)/cameraWidth;
+
+                    //abajo y arriba varia dependiendo de la rotacion de la camara
                     if(mSensorOrientation == 90){
-                        top  = (t * canvasHeight)/cameraHeight;
-                        bottom = (b * canvasHeight)/cameraHeight;
+                        t  = (t * canvasHeight)/cameraHeight;
+                        b = (b * canvasHeight)/cameraHeight;
                     }else{
-                        top  = canvasHeight - ((t * canvasHeight)/cameraHeight);
-                        bottom = canvasHeight - ((b * canvasHeight)/cameraHeight);
+                        t  = canvasHeight - ((t * canvasHeight)/cameraHeight);
+                        b = canvasHeight - ((b * canvasHeight)/cameraHeight);
                     }
 
-                    xc = left + ((right-left)/2);
-                    yc = top + ((bottom - top)/2);
+                    //calculamos la difrencia entre l y r, t y b
+                    difx = (r - l)/2;
+                    dify = (b - t)/2;
 
-                    int iz, der, ar, ab;
-                    int dify, difx, derecha, abajo;
-                    dify = (int)((bottom - yc) * 1.5);
-                    difx = (int)((right - xc) * 1.5);
+                    //centros en x y y
+                    outCenterx = l + (difx);//La diferencia en x es igual la esquina derecha menos la esquina izquierda
+                    outCentery = t + (dify);//La diferencia en y es igual la esquina inferior menos la esquina superior
+
+                    //calculamos las esquinas del rectangulo del rostro aumentando sus dimensiones, los calculos dependen de la rotacion del dispositivo
 
                     switch(deviceRotation){
                         case 0:{
-                            iz = xc - dify;
-                            der = xc + dify;
-                            ar = yc - difx;
-                            ab = yc + difx;
-                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
-                            fotoRotation = getOrientation(90);
-
-                            izquierda = (int)(cameraHeight - ((l + ((r - l)/2)) - (((b - t)/2) * 1.5)));
-                            arriba = (int)((t + ((b - t)/2)) - (((r - l)/2) * 1.5));
-                            derecha = (int)(cameraHeight - ((l + ((r - l)/2)) + (((b - t)/2) * 1.5)));
-                            abajo = (int)((t + ((b - t)/2)) + (((r - l)/2) * 1.5));
-
-                            izquierda = (izquierda * largest.getWidth())/cameraWidth;
-                            derecha = (derecha * largest.getWidth())/cameraWidth;
-                            arriba = (arriba * largest.getHeight())/cameraHeight;
-                            abajo = (abajo * largest.getHeight())/cameraHeight;
-
-                            anchoImagenRecortada = izquierda - derecha;
-                            altoImagenRecortada = abajo - arriba;
+                            left = (int)(outCenterx - (dify * 1.5));
+                            right = (int)(outCenterx + (dify * 1.5));
+                            top = (int)(outCentery - (difx * 1.5));
+                            bottom = (int)(outCentery + (difx * 1.5));
                             break;
                         }
                         case 90:{
-                            iz = xc - difx;
-                            der = xc + difx;
-                            ar = yc - dify;
-                            ab = yc + dify;
-                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
-                            fotoRotation = getOrientation(0);
-
-                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
-                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.5));
-                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
-                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.5));
-
-                            izquierda = (izquierda * largest.getWidth())/cameraWidth;
-                            derecha = (derecha * largest.getWidth())/cameraWidth;
-                            arriba = (arriba * largest.getHeight())/cameraHeight;
-                            abajo = (abajo * largest.getHeight())/cameraHeight;
-
-                            anchoImagenRecortada = derecha - izquierda;
-                            altoImagenRecortada = abajo - arriba;
+                            left = (int)(outCenterx - (difx * 1.5));
+                            right = (int)(outCenterx + (difx * 1.5));
+                            top = (int)(outCentery - (dify * 1.5));
+                            bottom = (int)(outCentery + (dify * 1.5));
                             break;
                         }
                         case 180:{
-                            iz = xc - dify;
-                            der = xc + dify;
-                            ar = yc - difx;
-                            ab = yc + difx;
-                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
-                            fotoRotation = getOrientation(270);
-
-                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
-                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.8));
-                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
-                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.8));
+                            left = (int)(outCenterx - (dify * 1.5));
+                            right = (int)(outCenterx + (dify * 1.5));
+                            top = (int)(outCentery - (difx * 1.5));
+                            bottom = (int)(outCentery + (difx * 1.5));
                             break;
                         }
                         case 270:{
-                            iz = xc - difx;
-                            der = xc + difx;
-                            ar = yc - dify;
-                            ab = yc + dify;
-                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
-                            fotoRotation = getOrientation(180);
-
-                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
-                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.8));
-                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
-                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.8));
+                            left = (int)(outCenterx - (difx * 1.5));
+                            right = (int)(outCenterx + (difx * 1.5));
+                            top = (int)(outCentery - (dify * 1.5));
+                            bottom = (int)(outCentery + (dify * 1.5));
                             break;
                         }
                         default:{
-                            iz = xc - difx;
-                            der = xc + difx;
-                            ar = yc - dify;
-                            ab = yc + dify;
-                            currentCanvas.drawRect(iz, ar, der, ab, greenPaint);
-
-                            izquierda = (int)((l + ((r - l)/2)) - (((r - l)/2) * 1.5));
-                            arriba = (int)((t + ((b - t)/2)) - (((b - t)/2) * 1.8));
-                            derecha = (int)((l + ((r - l)/2)) + (((r - l)/2) * 1.5));
-                            abajo = (int)((t + ((b - t)/2)) + (((b - t)/2) * 1.8));
-                            break;
+                            left = (int)(outCenterx - (difx * 1.5));
+                            right = (int)(outCenterx + (difx * 1.5));
+                            top = (int)(outCentery - (dify * 1.5));
+                            bottom = (int)(outCentery + (dify * 1.5));
                         }
                     }
-
                     currentCanvas.drawRect(left, top, right, bottom, greenPaint);
-
-
-                    Log.d("DIM", "CanvasH " + canvasHeight +
-                            "\nCanvasW " + canvasWidth +
-                            "\nCameraH " + cameraHeight +
-                            "\nCameraW " + cameraWidth +
-                            "\nFaceL " + rectangleFace.left +
-                            "\nFaceL " + left +
-                            "\nFaceR " + rectangleFace.right +
-                            "\nFaceR " + right +
-                            "\nFaceT " + rectangleFace.top +
-                            "\nFaceB " + rectangleFace.bottom +
-                            "\nRotacionCanvas " + rotationCanvas +
-                            "\nSensorOr " + mSensorOrientation +
-                            "\nAcelerometroOr " + deviceRotation +
-                            "\narriba " + arriba +
-                            "\nabajo " + abajo +
-                            "\nizquierda " + izquierda +
-                            "\nderecha " + derecha
-                    );
-
-                    paint.setColor(Color.RED);
-                    currentCanvas.drawLine(xc,0, xc, canvasHeight, paint);
-                    paint.setColor(Color.BLUE);
-                    currentCanvas.drawLine(0, yc, canvasWidth, yc, paint);
-                    currentCanvas.drawText("Arriba", 0, 6, xc, top, greenPaint);
-                    currentCanvas.drawText("Izquierda", 0, 9, left, yc, greenPaint);
                 }
                 mSquareView.getHolder().unlockCanvasAndPost(currentCanvas);
             }
@@ -609,9 +619,6 @@ public class CameraFragment extends Fragment
                     if (face.length>0){
                         detectedFace = face[0];
                         rectangleFace = detectedFace.getBounds();
-                        //ojoIzquierdo = detectedFace.getMouthPosition();
-                        //ojoDerecho = detectedFace.getRightEyePosition();
-                        //Log.i(TAG, ojoIzquierdo.toString());
                         if(takePictureOfFace){
                             Log.i("AF", "tomar foto");
                             detectedFace = null;
@@ -900,11 +907,6 @@ public class CameraFragment extends Fragment
                 if (map == null) {
                     continue;
                 }
-                //Calculamos los altos de las 3 fotos que se van a tomar
-                for(int i =0; i < anchosFotos.length; i++) {
-                    altosFotos[i] = (anchosFotos[i] * 4) / 3;
-                    Log.i("SIZE", anchosFotos[i] + "" + altosFotos[i]);
-                }
 
                 // For still image captures, we use the largest available size.
                 largest = Collections.max(
@@ -918,51 +920,33 @@ public class CameraFragment extends Fragment
                 mImageReader.setOnImageAvailableListener(
                         mOnImageAvailableListener, mBackgroundHandler);
 
-                // Find out if we need to swap dimension to get the preview size relative to sensor
-                // coordinate.
+                // En este caso no ocupamos displayRotation ya que nuestra rotacion esta bloqueada y siempre va a ser 0 pero lo dejo aqui para futuras implementaciones
                 displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-                //noinspection ConstantConditions
+
+                //Orientacion del sensor de la camara
                 mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
                 boolean swappedDimensions = false;
+
                 switch (displayRotation) {
                     case Surface.ROTATION_0:
-                        if(mSensorOrientation == 90){
-                            rotationCanvas = 270;
-                        }
-                        if(mSensorOrientation == 270){
-                            rotationCanvas = 90;
-                        }
                         break;
                     case Surface.ROTATION_90:
-                        if(mSensorOrientation == 90){
-                            rotationCanvas = 0;
-                        }
-                        if(mSensorOrientation == 270){
-                            rotationCanvas = 180;
-                        }
                         break;
                     case Surface.ROTATION_180:
                         if(mSensorOrientation == 90){
-                            rotationCanvas = 90;
                             swappedDimensions = true;
                         }
                         if(mSensorOrientation == 270){
-                            rotationCanvas = 270;
                             swappedDimensions = true;
                         }
                         break;
                     case Surface.ROTATION_270:
-                        if(mSensorOrientation == 90){
-                            rotationCanvas = 180;
-                        }
                         if(mSensorOrientation == 0){
                             swappedDimensions = true;
                         }
                         if(mSensorOrientation == 180){
                             swappedDimensions = true;
-                        }
-                        if(mSensorOrientation == 270){
-                            rotationCanvas = 0;
                         }
                         break;
                     default:
@@ -1340,7 +1324,7 @@ public class CameraFragment extends Fragment
                                                @NonNull TotalCaptureResult result) {
 
 
-                    showToast("Saved: " + mFile + "\n" + centerx + " " + centery);
+                    showToast("Saved: " + mFile);
                     //Notificamos al media scanner que se ha creado un archivo
                     MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
                     Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
@@ -1351,21 +1335,21 @@ public class CameraFragment extends Fragment
 
                     Log.i("AF", "tamaños" + bm.getWidth()
                             + "\n" + bm.getHeight()
-                            + "\n" + izquierda
-                            + "\n" + anchoImagenRecortada
-                            + "\n" + arriba
-                            + "\n" + altoImagenRecortada
+                            + "\n" + outLeft
+                            + "\n" + outWidth
+                            + "\n" + outTop
+                            + "\n" + outHeight
                     );
 
                     //write the bytes in file
                     try {
-                        Bitmap bitmapChico = Bitmap.createBitmap(bm, izquierda, arriba,
-                                anchoImagenRecortada, altoImagenRecortada, matrix, true);
+                        Bitmap bitmapChico = Bitmap.createBitmap(bm, outLeft, outTop,
+                                outWidth, outHeight, matrix, true);
                         ByteArrayOutputStream bos = new ByteArrayOutputStream();
                         bitmapChico.compress(Bitmap.CompressFormat.PNG, 0 , bos);
                         byte[] bitmapdata = bos.toByteArray();
                         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-                                File.separator + "MyCameraApp" + File.separator + "IMG" + (System.currentTimeMillis()/1000) + "_" + anchosFotos[0] +".png");
+                                File.separator + "MyCameraApp" + File.separator + "IMG" + (System.currentTimeMillis()/1000) + ".png");
                         FileOutputStream fos = new FileOutputStream(file);
                         fos.write(bitmapdata);
                         fos.flush();

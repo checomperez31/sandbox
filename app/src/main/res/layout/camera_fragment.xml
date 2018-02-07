@@ -2,13 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.turing.sandbox.BlankFragment">
+    tools:context="com.turing.sandbox.BlankFragment"
+    android:animateLayoutChanges="true">
 
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
 
         <FrameLayout
             android:id="@+id/frame_camera"
