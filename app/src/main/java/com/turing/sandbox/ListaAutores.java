@@ -65,11 +65,11 @@ public class ListaAutores extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_lista_autores, container, false);
-        adapter = new AdaptadorAutores(getContext());
+        View view = inflater.inflate(R.layout.fragment_imagenes_usuario, container, false);
+        /*adapter = new AdaptadorAutores(getContext());
         recyclerView = view.findViewById(R.id.recycler_autores);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);*/
         return view;
     }
 

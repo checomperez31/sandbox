@@ -1,9 +1,161 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.turing.sandbox.ImagenesUsuario">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.turing.sandbox.ImagenesUsuario"
+    android:background="#EFEFEF"
+    android:layout_gravity="center">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/asistencia_card"
+            android:layout_width="450dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="220dp"
+            app:cardElevation="4dp"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginTop="50dp"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:id="@+id/asistencia_rlusuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/asistencia_iconusuario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/asistencia_tilusuario"
+                        android:src="@drawable/ic_person"/>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/asistencia_tilusuario"
+                        android:layout_toRightOf="@+id/asistencia_iconusuario"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:hint="Numero de usuario"
+                        android:orientation="horizontal"
+                        >
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/asistencia_etusuario"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:inputType="number"
+                            />
+                    </android.support.design.widget.TextInputLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/asistencia_rlfecha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/asistencia_iconfecha"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/asistencia_tilfecha"
+                        android:src="@drawable/ic_date"/>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/asistencia_tilfecha"
+                        android:layout_toRightOf="@+id/asistencia_iconfecha"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:hint="Numero de usuario"
+                        android:orientation="horizontal"
+                        >
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/asistencia_etfecha"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:inputType="number"
+                            />
+                    </android.support.design.widget.TextInputLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/asistencia_rlhora"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="35dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/asistencia_iconhora"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/asistencia_tilhora"
+                        android:src="@drawable/ic_clock"/>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/asistencia_tilhora"
+                        android:layout_toRightOf="@+id/asistencia_iconhora"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:hint="Numero de usuario"
+                        android:orientation="horizontal"
+                        >
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/asistencia_ethora"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:inputType="number"
+                            />
+                    </android.support.design.widget.TextInputLayout>
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <ImageView
+            android:id="@+id/asistencia_imagenpersona"
+            android:layout_width="200dp"
+            android:layout_height="250dp"
+            android:layout_centerHorizontal="true"
+            android:background="#AAAAAA"
+            android:elevation="5dp"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/asistencia_card"
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true"
+            android:background="@color/colorPrimary"
+            android:text="Guardar"
+            android:textColor="@android:color/white"/>
+
+    </RelativeLayout>
 
 
 
-</FrameLayout>
+
+</RelativeLayout>

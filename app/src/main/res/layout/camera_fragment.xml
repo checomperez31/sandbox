@@ -7,6 +7,7 @@
 
 
     <RelativeLayout
+        android:id="@+id/cam_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -72,7 +73,39 @@
 
         </RelativeLayout>
 
+    </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#7f000000"
+        android:visibility="gone"
+        >
+
+        <RelativeLayout
+            android:id="@+id/cam_progress_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            >
+
+            <ProgressBar
+                android:id="@+id/cam_progress"
+                android:layout_width="150dp"
+                android:layout_height="150dp" />
+
+            <TextView
+                android:id="@+id/cam_progress_msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/cam_progress"
+                android:text="Mensaje"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"
+                />
+
+        </RelativeLayout>
 
     </RelativeLayout>
 

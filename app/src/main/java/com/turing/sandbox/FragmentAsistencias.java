@@ -1,11 +1,13 @@
 package com.turing.sandbox;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,8 @@ public class FragmentAsistencias extends Fragment {
 
     private TextInputEditText etusuario;
     private Button btnRegistro;
+    private Ubicaciones ubicaciones;
+    private Intent servicioUbicaciones;
 
     public FragmentAsistencias() {
         // Required empty public constructor
@@ -80,6 +84,14 @@ public class FragmentAsistencias extends Fragment {
                 mListener.onCallToCamera(Integer.parseInt(etusuario.getText().toString()));
             }
         });
+
+        ubicaciones = Ubicaciones.getInstance();
+        ubicaciones.setDataChangeListener(new Ubicaciones.OnDataChangeListener() {
+            @Override
+            public void onDataChange(Double latitud, Double longitud) {
+                Log.i("UBICACION", "Latitud: " + latitud + "\nLongitud: " + longitud);
+            }
+        });
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -98,6 +110,19 @@ public class FragmentAsistencias extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        servicioUbicaciones = new Intent(getActivity(), ServicioUbicaciones.class);
+        getActivity().startService(servicioUbicaciones);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().stopService(servicioUbicaciones);
     }
 
     @Override

@@ -21,27 +21,41 @@
             android:layout_centerHorizontal="true"
             />
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/asistencia_tilusuario"
-            android:layout_below="@+id/asistencia_textousuario"
+        <RelativeLayout
+            android:id="@+id/asistencia_rlusuario"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Numero de usuario"
+            android:layout_below="@+id/asistencia_textousuario"
             >
 
-            <android.support.design.widget.TextInputEditText
-                android:id="@+id/asistencia_etusuario"
+            <ImageView
+                android:id="@+id/asistencia_iconusuario"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_person"/>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_toRightOf="@+id/asistencia_iconusuario"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:inputType="number"
-                />
+                android:hint="Numero de usuario"
+                android:orientation="horizontal"
+                >
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/asistencia_etusuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:inputType="number"
+                    />
+            </android.support.design.widget.TextInputLayout>
 
-        </android.support.design.widget.TextInputLayout>
+        </RelativeLayout>
 
         <Button
             android:id="@+id/asistencias_btnRegistro"
-            android:layout_below="@+id/asistencia_tilusuario"
+            android:layout_below="@+id/asistencia_rlusuario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"

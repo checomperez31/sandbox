@@ -6,14 +6,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
@@ -241,6 +240,12 @@ public class MainActivity extends AppCompatActivity
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias").commit();
     }
+
+    @Override
+    public void onPhotoResponse(Bitmap image) {
+
+    }
+
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {

@@ -54,17 +54,11 @@ import android.support.v4.content.ContextCompat;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -116,6 +110,8 @@ public class CameraFragment extends Fragment
     private int displayRotation;
     private int deviceRotation = 0;
     private Size largest;
+    private int[]orientations = {0, 90, 180, 270};
+    private int[]orientationsRev = {0, -270, -180, -90};
 
     /**
      * Variables del recuadro del rostro
@@ -141,18 +137,9 @@ public class CameraFragment extends Fragment
             if ((int)event.values[1] > 0 && (int)event.values[0] == 0) {
                 final int value = Surface.ROTATION_0;//portrait
                 if (orientation != value) {
-                    Log.d("orientation", "portrait  + update");
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-
-                            rotateAnim.setDuration(500);
-                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
-                        }
-                    });
+                    Log.d("orientation", "portrait " + orientations[orientation] + " update" + orientations[value]);
+                    getView().findViewById(R.id.cam_btnBack).clearAnimation();
+                    getView().findViewById(R.id.cam_btnBack).animate().rotation(getIconOrietation(orientation, value)).setDuration(500).start();
                     deviceRotation = 0;
                 }
                 orientation = value;
@@ -160,18 +147,9 @@ public class CameraFragment extends Fragment
             }else if ((int)event.values[1] < 0 && (int)event.values[0] == 0) {
                 final int value = Surface.ROTATION_180;//portrait reverse
                 if (orientation != value) {
-                    Log.d("orientation", "portrait reverse + update");
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-
-                            rotateAnim.setDuration(500);
-                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
-                        }
-                    });
+                    Log.d("orientation", "portrait reverse " + orientations[orientation] + " update" + orientations[value]);
+                    getView().findViewById(R.id.cam_btnBack).clearAnimation();
+                    getView().findViewById(R.id.cam_btnBack).animate().rotation(getIconOrietation(orientation, value)).setDuration(500).start();
                     deviceRotation = 180;
                 }
                 orientation = value;
@@ -179,18 +157,9 @@ public class CameraFragment extends Fragment
             }else if ((int)event.values[0] > 0 && (int)event.values[1] == 0) {
                 final int value = Surface.ROTATION_90;//portrait reverse
                 if (orientation != value) {
-                    Log.d("orientation", "landscape  + update");
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-
-                            rotateAnim.setDuration(500);
-                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
-                        }
-                    });
+                    Log.d("orientation", "landscape " + orientations[orientation] + " update" + orientations[value]);
+                    getView().findViewById(R.id.cam_btnBack).clearAnimation();
+                    getView().findViewById(R.id.cam_btnBack).animate().rotation(getIconOrietation(orientation, value)).setDuration(500).start();
                     deviceRotation = 90;
                 }
                 orientation = value;
@@ -198,24 +167,12 @@ public class CameraFragment extends Fragment
             }else if ((int)event.values[0] < 0 && (int)event.values[1] == 0) {
                 final int value = Surface.ROTATION_270;//portrait reverse
                 if (orientation != value) {
-                    Log.d("orientation", "landscape reverse + update");
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final RotateAnimation rotateAnim = new RotateAnimation((float)orientation, (float) value,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f,
-                                    RotateAnimation.RELATIVE_TO_SELF, 0.5f);
-                            rotateAnim.setInterpolator(new LinearInterpolator());
-                            rotateAnim.setDuration(500);
-                            getView().findViewById(R.id.cam_btnBack).setAnimation(rotateAnim);
-                            getView().findViewById(R.id.cam_btnBack).startAnimation(rotateAnim);
-
-                        }
-                    });
+                    Log.d("orientation", "landscape reverse " + orientations[orientation] + " update" + orientations[value]);
+                    getView().findViewById(R.id.cam_btnBack).clearAnimation();
+                    getView().findViewById(R.id.cam_btnBack).animate().rotation(getIconOrietation(orientation, value)).setDuration(500).start();
                 }
                 deviceRotation = 270;
                 orientation = value;
-
             }
         }
 
@@ -316,23 +273,25 @@ public class CameraFragment extends Fragment
                         case 0:{
                             mx = 1.9;
                             my = 1.5;
+                            fotoRotation = getOrientation(deviceRotation + mSensorOrientation);
                             break;
                         }
                         case 90:{
                             mx = 1.5;
                             my = 1.9;
-
-
+                            fotoRotation = getOrientation(deviceRotation - mSensorOrientation);
                             break;
                         }
                         case 180:{
                             mx = 1.9;
                             my = 1.5;
+                            fotoRotation = getOrientation(deviceRotation + mSensorOrientation);
                             break;
                         }
                         case 270:{
                             mx = 1.5;
                             my = 1.9;
+                            fotoRotation = getOrientation(deviceRotation - mSensorOrientation);
                             break;
                         }
                         default:{
@@ -799,6 +758,8 @@ public class CameraFragment extends Fragment
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
+        view.findViewById(R.id.picture).setEnabled(false);
+        view.findViewById(R.id.picture).setAlpha(0.5f);
         view.findViewById(R.id.picture).setOnClickListener(this);
         view.findViewById(R.id.cam_btnBack).setOnClickListener(this);
         mTextureView = view.findViewById(R.id.texture);
@@ -1312,8 +1273,7 @@ public class CameraFragment extends Fragment
             Log.i("AF", "AFON");
 
             // Orientation
-            Log.i("AF", "AFON" + fotoRotation);
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, fotoRotation);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
 
             CameraCaptureSession.CaptureCallback CaptureCallback
                     = new CameraCaptureSession.CaptureCallback() {
@@ -1329,9 +1289,10 @@ public class CameraFragment extends Fragment
                     MediaScannerConnection.scanFile (activity, new String[] {mFile.toString()}, null, null);
                     Bitmap bm = BitmapFactory.decodeFile(mFile.getPath());
 
+                    Log.i("AF", "ROTATIONFOTO" + fotoRotation);
                     Matrix matrix = new Matrix();
                     matrix.postScale(1f, 1f);
-                    //matrix.postRotate(fotoRotation);
+                    matrix.postRotate(fotoRotation);
 
                     Log.i("AF", "tamaños" + bm.getWidth()
                             + "\n" + bm.getHeight()
@@ -1340,6 +1301,8 @@ public class CameraFragment extends Fragment
                             + "\n" + outTop
                             + "\n" + outHeight
                     );
+
+                    String base64Image = "";
 
                     //write the bytes in file
                     try {
@@ -1354,6 +1317,8 @@ public class CameraFragment extends Fragment
                         fos.write(bitmapdata);
                         fos.flush();
                         fos.close();
+
+                        base64Image = Base64.encodeToString(bitmapdata, Base64.NO_WRAP);
                         MediaScannerConnection.scanFile (activity, new String[] {file.toString()}, null, null);
                     }
                     catch(IOException ioe){
@@ -1367,18 +1332,17 @@ public class CameraFragment extends Fragment
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
-                    byte[] b = baos.toByteArray();
-                    String base64Image = Base64.encodeToString(b, Base64.NO_WRAP);
+
+
                     Log.d(TAG, mFile.toString());
                     Log.d(TAG, base64Image);
-
                     /*Map<String, String> headers = new HashMap<>();
                     headers.put("Content-type", "application/json");
                     JSONObject json = new JSONObject();
                     try{
                         json.put("fecha", "2018-01-10");
                         json.put("ubicacion", "ubicacion");
-                        json.put("asistenciasuserId", usuario);
+                        json.put("asistenciasuserId", "7");
                         json.put("imagen", base64Image);
                     }
                     catch(JSONException jsone){
@@ -1392,14 +1356,14 @@ public class CameraFragment extends Fragment
                             json,
                             headers,
                             CameraFragment.this
-                    );*/
-                    getActivity().runOnUiThread(new Runnable() {
+                    );
+                    /*getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             progress.setValid();
                         }
-                    });
-                    unlockFocus();
+                    });*/
+
                 }
             };
 
@@ -1423,6 +1387,30 @@ public class CameraFragment extends Fragment
         // For devices with orientation of 90, we simply return our mapping from ORIENTATIONS.
         // For devices with orientation of 270, we need to rotate the JPEG 180 degrees.
         return rotation% 360;
+    }
+
+    /**
+     * Retorna la rotacion de los iconos de la camara
+     *
+     * @param lastRotation Ultima rotacion del dispositivo
+     * @param actualRotation Rotacion actual del dispositivo
+     * @return La rotacion del icono dependiendo si se giro en sentido de las manecillas del reloj o no
+     */
+    private float getIconOrietation(int lastRotation, int actualRotation){
+        if(getOrientation(orientations[lastRotation] + 180) == orientations[actualRotation]) {
+            Log.i("ICONROT", "180");
+            return Float.parseFloat(orientations[actualRotation] + "");
+        }
+
+        //Esta rotando en sentido contrario a las manecillas del reloj
+        if(getOrientation(orientations[lastRotation] + 180) > orientations[actualRotation]){
+            Log.i("ICONROT", "90");
+            return Float.parseFloat("" + orientations[actualRotation++]);
+        }
+        else{
+            Log.i("ICONROT", "-90");
+            return Float.parseFloat("" + orientationsRev[actualRotation--]);
+        }
     }
 
     /**
@@ -1693,6 +1681,8 @@ public class CameraFragment extends Fragment
         void onFragmentInteraction(Uri uri);
 
         void onCallBack(int UserId);
+
+        void onPhotoResponse(Bitmap image);
     }
 
 }
