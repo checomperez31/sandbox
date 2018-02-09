@@ -26,28 +26,18 @@ public class ProgressDialog extends Dialog {
     ImageView icono;
     Drawable valido, invalido;
     Button btnOk;
-    int displayRotation = 0;
 
     public ProgressDialog(Context context){
         super(context);
         create();
     }
 
-    public ProgressDialog(Context context, int displayRotation){
-        super(context);
-        this.displayRotation = displayRotation;
-        create();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        if(displayRotation == 0){
-            setContentView(R.layout.progress_dialog_alert);
-        }else{
-            setContentView(R.layout.progress_dialog_alert_land);
-        }
+        setContentView(R.layout.progress_dialog_alert);
 
         setCancelable(false);
         mensaje = findViewById(R.id.dialog_mensaje);

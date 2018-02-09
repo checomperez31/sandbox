@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -51,7 +50,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -59,13 +57,10 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import com.android.volley.Request;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -75,9 +70,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +79,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class CameraFragment extends Fragment
-        implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback, InterfaceData {
+        implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback{
 
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -105,13 +98,15 @@ public class CameraFragment extends Fragment
     private Rect rectangleFace;
     private boolean mAutoFocusSupported = false;
     private int fotoRotation = 0;
-    private ProgressDialog progress;
     private String[] cameras;
     private int displayRotation;
     private int deviceRotation = 0;
     private Size largest;
     private int[]orientations = {0, 90, 180, 270};
     private int[]orientationsRev = {0, -270, -180, -90};
+
+    private RelativeLayout content, contentProgress;
+    private TextView mensajeProgress;
 
     /**
      * Variables del recuadro del rostro
@@ -260,6 +255,12 @@ public class CameraFragment extends Fragment
                     currentCanvas.save();
                     currentCanvas.rotate(mSensorOrientation,currentCanvas.getWidth() / 2,currentCanvas.getHeight() / 2);
 
+                    //Pruebas
+                    Log.i(TAG, detectedFace.getLeftEyePosition() +
+                            "\n" + detectedFace.getMouthPosition() +
+                            "\n" + detectedFace.getRightEyePosition()
+                    );
+
                     //Dimensiones del canvas (estas cambian dependiendo de la posicion del dispositivo)
                     int canvasWidth, canvasHeight;
 
@@ -340,7 +341,7 @@ public class CameraFragment extends Fragment
                     outWidth = ((right - left) * finalWidth)/cameraWidth;
                     outHeight = ((bottom - top) * finalHeight)/cameraHeight;
 
-                    Log.d("DIM", "\nCameraH " + cameraHeight +
+                    /*Log.d("DIM", "\nCameraH " + cameraHeight +
                                     "\nCameraW " + cameraWidth +
                                     "\nFaceL " + rectangleFace.left +
                                     "\nFaceR " + rectangleFace.right +
@@ -354,7 +355,7 @@ public class CameraFragment extends Fragment
                                     "\nFaceB " + bottom +
                                     "\nSensorOr " + mSensorOrientation +
                                     "\nDeviceRotation " + deviceRotation
-                    );
+                    );*/
 
                     if((left < 0) || (right > cameraWidth) || (top < 0) || (bottom > cameraHeight)){
                         getView().findViewById(R.id.picture).setEnabled(false);
@@ -753,6 +754,9 @@ public class CameraFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.camera_fragment, container, false);
+        content = view.findViewById(R.id.cam_progress_content);
+        contentProgress = view.findViewById(R.id.cam_progress_content_progress);
+        mensajeProgress = view.findViewById(R.id.cam_progress_msg);
         return view;
     }
 
@@ -771,6 +775,16 @@ public class CameraFragment extends Fragment
         greenPaint.setColor(Color.GREEN);
         greenPaint.setStyle(Paint.Style.STROKE);
         greenPaint.setStrokeWidth(2);
+
+        content.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(content.getVisibility() == View.VISIBLE)content.setVisibility(View.GONE);
+            }
+        });
+
+        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -1198,19 +1212,14 @@ public class CameraFragment extends Fragment
      */
     private void takePicture() {
         final Activity activity = getActivity();
-        progress = new ProgressDialog(getContext(), deviceRotation);
         takePictureOfFace = true;
-        progress.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-            }
-        });
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                progress.setMensaje("Validando");
-
-                progress.show();
+                //mostramos retroalimentacion al usuario mientras se guarda la foto y se hace el recorte del usuario
+                content.setVisibility(View.VISIBLE);
+                contentProgress.setRotation(deviceRotation);
+                mensajeProgress.setText("Generando Foto");
             }
         });
 
@@ -1302,8 +1311,6 @@ public class CameraFragment extends Fragment
                             + "\n" + outHeight
                     );
 
-                    String base64Image = "";
-
                     //write the bytes in file
                     try {
                         Bitmap bitmapChico = Bitmap.createBitmap(bm, outLeft, outTop,
@@ -1318,51 +1325,34 @@ public class CameraFragment extends Fragment
                         fos.flush();
                         fos.close();
 
-                        base64Image = Base64.encodeToString(bitmapdata, Base64.NO_WRAP);
                         MediaScannerConnection.scanFile (activity, new String[] {file.toString()}, null, null);
+
+                        //redireccionamos a el fragment de registro de asistencia
+                        mListener.onPhotoResponse(bitmapChico);
+                        unlockFocus();
+
+                        //Mostramos retroalimentacion al usuario, el progress
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                content.setVisibility(View.GONE);
+                                contentProgress.setRotation(deviceRotation);
+                            }
+                        });
+
                     }
                     catch(IOException ioe){
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                content.setVisibility(View.VISIBLE);
+                                contentProgress.setRotation(deviceRotation);
+                                mensajeProgress.setText("Ha ocurrido un error");
+                            }
+                        });
 
+                        unlockFocus();
                     }
-                    /*Bitmap bitmapChico = Bitmap.createBitmap(bm, 0, 0,
-                            bm.getWidth(), bm.getHeight(), matrix, false);
-
-                    bm.recycle();*/
-
-
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
-
-
-                    Log.d(TAG, mFile.toString());
-                    Log.d(TAG, base64Image);
-                    /*Map<String, String> headers = new HashMap<>();
-                    headers.put("Content-type", "application/json");
-                    JSONObject json = new JSONObject();
-                    try{
-                        json.put("fecha", "2018-01-10");
-                        json.put("ubicacion", "ubicacion");
-                        json.put("asistenciasuserId", "7");
-                        json.put("imagen", base64Image);
-                    }
-                    catch(JSONException jsone){
-
-                    }
-
-                    Comunicaciones com = new Comunicaciones(getContext());
-                    com.getSomethingJSON(
-                            Constants.url + Constants.asistencia,
-                            Request.Method.POST,
-                            json,
-                            headers,
-                            CameraFragment.this
-                    );
-                    /*getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progress.setValid();
-                        }
-                    });*/
 
                 }
             };
@@ -1438,19 +1428,7 @@ public class CameraFragment extends Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                Log.i("AF", "presionado el boton");
                 takePicture();
-                /*if(usuario > 0){
-                    takePicture();
-                }else{
-                    Activity activity = getActivity();
-                    if (null != activity) {
-                        new AlertDialog.Builder(activity)
-                                .setMessage("Inserta tu ID")
-                                .setPositiveButton(android.R.string.ok, null)
-                                .show();
-                    }
-                }*/
                 break;
             }
             case R.id.cam_btnBack:{
@@ -1465,43 +1443,6 @@ public class CameraFragment extends Fragment
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         }
-    }
-
-    @Override
-    public void mostrarDatos(String datos) {
-
-    }
-
-    @Override
-    public void mostrarDatos(JSONObject datos) {
-        Log.i("DATA", datos.toString());
-        final Activity activity = getActivity();
-        if(datos.has("validado")){
-            try {
-                boolean val = (boolean) datos.get("validado");
-                if (val) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progress.setValid();
-                        }
-                    });
-                } else {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progress.setInvalid();
-                        }
-                    });
-                }
-                unlockFocus();
-            }
-            catch(JSONException jsone)
-            {
-
-            }
-        }
-
     }
 
     /**

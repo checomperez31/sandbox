@@ -33,20 +33,15 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        BlankFragment.OnFragmentInteractionListener,
-        EditTextFragment.OnFragmentInteractionListener,
-        RESTFragment.OnFragmentInteractionListener,
-        ListaAutores.OnFragmentInteractionListener,
         FragmentAsistencias.OnFragmentInteractionListener,
-        CameraFragment.OnFragmentInteractionListener{
+        CameraFragment.OnFragmentInteractionListener,
+        ImagenesUsuario.OnFragmentInteractionListener{
 
-    BlankFragment blankFragment;
-    EditTextFragment editTextFragment;
-    RESTFragment restFragment;
-    ListaAutores fragmentAutores;
     CameraFragment cameraFragment;
     FragmentAsistencias fragmentAsistencias;
+    ImagenesUsuario imagenesUsuario;
     int id;
+    boolean showForm = false;
     boolean showCamera = false;
 
     private final int MY_PERMISSIONS = 100;
@@ -57,36 +52,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        /*
-        *Manejo de sesiones
-        UserSessionManager session;
-        session = new UserSessionManager(getApplicationContext());
-        if(session.isUserLoggedIn()){
-            Intent i = new Intent(getApplicationContext(),MainDenarius.class);
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(i);
-            finish();
-        }
-
-
-        //Manejo de Session
-        session = new UserSessionManager(getApplicationContext());
-
-        if(!session.isUserLoggedIn()) finish();
-
-
-        UserSessionManager session;
-                                            session = new UserSessionManager(context);
-
-                                            session.createUserLoginSession(usuario.getIdUsuario(), usuario.getUsuario(), usuario.getNombre(), usuario.getCorreo(), usuario.getSexo(), usuario.getFecha_Nac());
-
-                                            Intent i = new Intent(context, MainDenarius.class);
-                                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-         context.startActivity(i);
-
-         */
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -99,18 +64,14 @@ public class MainActivity extends AppCompatActivity
 
         requierePermiso();
 
-        cameraFragment = (CameraFragment) getSupportFragmentManager().findFragmentByTag("Camera");
-        fragmentAsistencias = (FragmentAsistencias) getSupportFragmentManager().findFragmentByTag("Asistencias");
+        cameraFragment = (CameraFragment) getSupportFragmentManager().findFragmentByTag("camara");
+        fragmentAsistencias = (FragmentAsistencias) getSupportFragmentManager().findFragmentByTag("asistencias");
+        imagenesUsuario = (ImagenesUsuario) getSupportFragmentManager().findFragmentByTag("asistenciausuario");
 
-        blankFragment = new BlankFragment();
-        fragmentAutores = ListaAutores.newInstance();
-        editTextFragment = EditTextFragment.newInstance();
-        restFragment = new RESTFragment();
+        if(cameraFragment == null)cameraFragment = new CameraFragment();
+        if(fragmentAsistencias == null)fragmentAsistencias = FragmentAsistencias.newInstance();
+        if(imagenesUsuario == null)imagenesUsuario = ImagenesUsuario.newInstance();
 
-        if(cameraFragment == null) {
-            cameraFragment = new CameraFragment();
-            fragmentAsistencias = FragmentAsistencias.newInstance();
-        }
         getSupportFragmentManager().beginTransaction().add(R.id.FragmentContent, fragmentAsistencias).commit();
     }
 
@@ -162,31 +123,18 @@ public class MainActivity extends AppCompatActivity
         id = item.getItemId();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (id == R.id.nav_camera) {
-            if(!showCamera) {
-                transaction.replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias");
-            }else{
-                transaction.replace(R.id.FragmentContent, cameraFragment, "AsistCamera");
-            }
-        } else if (id == R.id.nav_gallery) {
-            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
-        } else if (id == R.id.nav_slideshow) {
-            transaction.replace(R.id.FragmentContent, restFragment, "GET");
-        } else if (id == R.id.nav_manage) {
-            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
-        } else if (id == R.id.nav_asistencia) {
-
-        } else if (id == R.id.nav_share) {
+        if (id == R.id.nav_asistencias) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, fragmentAsistencias, "asistencias").commit();
+        } else if (id == R.id.nav_camara) {
             getSupportActionBar().hide();
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             );
-            transaction.replace(R.id.FragmentContent, cameraFragment, "Camera");
-        } else if (id == R.id.nav_send) {
-
+            showCamera = true;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            cameraFragment = CameraFragment.newInstance();
+            getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, cameraFragment, "camara").commit();
         }
 
         transaction.commit();
@@ -242,8 +190,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onPhotoResponse(Bitmap image) {
-
+    public void onPhotoResponse(final Bitmap image) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+                imagenesUsuario = ImagenesUsuario.newInstance(image);
+                getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, imagenesUsuario, "asistenciausuario").commit();
+                /*getSupportActionBar().show();
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_VISIBLE
+                );*/
+                showForm = true;
+            }
+        });
     }
 
 
@@ -254,27 +215,18 @@ public class MainActivity extends AppCompatActivity
         showCamera = savedInstanceState.getBoolean("SHOWCAM");
         getSupportActionBar().show();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (id == R.id.nav_camera) {
-            if(!showCamera) {
-                transaction.replace(R.id.FragmentContent, fragmentAsistencias, "Asistencias");
-            }else{
-                getSupportActionBar().hide();
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                );
-                transaction.replace(R.id.FragmentContent, cameraFragment, "AsistCamera");
-            }
-        } else if (id == R.id.nav_gallery) {
-            transaction.replace(R.id.FragmentContent, editTextFragment, "Fragment ET");
-        } else if (id == R.id.nav_slideshow) {
-            transaction.replace(R.id.FragmentContent, restFragment, "GET");
-        } else if (id == R.id.nav_manage) {
-            transaction.replace(R.id.FragmentContent, fragmentAutores, "Autores");
-        } else if (id == R.id.nav_asistencia) {
-
-        } else if (id == R.id.nav_share) {
-            transaction.replace(R.id.FragmentContent, cameraFragment, "Camera");
+        if (id == R.id.nav_asistencias) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, fragmentAsistencias, "asistencias").commit();
+        } else if (id == R.id.nav_camara) {
+            getSupportActionBar().hide();
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            );
+            showCamera = true;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            cameraFragment = CameraFragment.newInstance();
+            getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContent, cameraFragment, "camara").commit();
         }
         transaction.commit();
     }
@@ -284,19 +236,6 @@ public class MainActivity extends AppCompatActivity
         outState.putInt("ID", id);
         outState.putBoolean("SHOWCAM", showCamera);
         super.onSaveInstanceState(outState);
-    }
-
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-            Log.i("OR", "LAND");
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            Log.i("OR", "PORT");
-        }
     }
 
     @Override
