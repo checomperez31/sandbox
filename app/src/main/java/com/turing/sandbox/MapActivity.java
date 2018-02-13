@@ -31,6 +31,38 @@ public class MapActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+        /*
+        *Manejo de sesiones
+        UserSessionManager session;
+        session = new UserSessionManager(getApplicationContext());
+        if(session.isUserLoggedIn()){
+            Intent i = new Intent(getApplicationContext(),MainDenarius.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+            finish();
+        }
+
+
+        //Manejo de Session
+        session = new UserSessionManager(getApplicationContext());
+
+        if(!session.isUserLoggedIn()) finish();
+
+
+        UserSessionManager session;
+                                            session = new UserSessionManager(context);
+
+                                            session.createUserLoginSession(usuario.getIdUsuario(), usuario.getUsuario(), usuario.getNombre(), usuario.getCorreo(), usuario.getSexo(), usuario.getFecha_Nac());
+
+                                            Intent i = new Intent(context, MainDenarius.class);
+                                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+         context.startActivity(i);
+
+         */
         super.onCreate(savedInstanceState);
         //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
         setContentView(R.layout.activity_maps);
