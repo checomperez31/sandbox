@@ -35,7 +35,7 @@ public class AdaptadorAutores extends RecyclerView.Adapter<AdaptadorAutores.View
             Map<String, String> headers = new HashMap<>();
             headers.put("Content-type", "application/json");
             headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(this.context).getToken());
-            Comunicaciones com = new Comunicaciones(this.context);
+            Comunicaciones com = new Comunicaciones(context, this);
             com.getSomethingString(Constants.url + Constants.autores,
                     Request.Method.POST,
                     new JSONObject(),

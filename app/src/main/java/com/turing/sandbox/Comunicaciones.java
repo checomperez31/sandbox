@@ -25,10 +25,12 @@ import java.util.Map;
 
 public class Comunicaciones {
     Context context;
+    InterfaceData mListener;
 
-    public Comunicaciones(Context context)
+    public Comunicaciones(Context context, InterfaceData listener)
     {
         this.context = context;
+        mListener = listener;
     }
 
     public void getSomethingJSON(String url, int method, JSONObject params, final Map<String, String> headers, final InterfaceData interfaceData)
@@ -52,8 +54,6 @@ public class Comunicaciones {
                     {
                         Log.i("Error", "Error: " + error.getMessage());
                     }
-
-
                 }
         )
         {
@@ -119,7 +119,6 @@ public class Comunicaciones {
                 return super.getBody();
             }
         };
-        RequestQueue requestQueue = Volley.newRequestQueue(context);
         stringRequest.setRetryPolicy(new RetryPolicy() {
             @Override
             public int getCurrentTimeout() {
@@ -136,7 +135,7 @@ public class Comunicaciones {
 
             }
         });
-        requestQueue.add(stringRequest);
+        VolleySingleton.getInstance(context).getRequestQueue().add(stringRequest);
     }
 
     public void registrarAsistencia(String url, final JSONObject params, final Map<String, String> headers, final InterfaceData interfaceDace)

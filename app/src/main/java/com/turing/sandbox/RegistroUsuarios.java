@@ -124,7 +124,7 @@ public class RegistroUsuarios extends Fragment implements View.OnClickListener, 
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-type", "application/json");
 
-                Comunicaciones com = new Comunicaciones(getActivity());
+                Comunicaciones com = new Comunicaciones(getActivity(), RegistroUsuarios.this);
                 com.getSomethingJSON(Constants.url + Constants.userdata, Request.Method.POST, jsonObject, headers, this);
                 break;
             }

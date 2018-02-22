@@ -68,7 +68,7 @@ public class SessionManager
     }
 
     public boolean checkLogin(){
-        if(!this.isUserLoggedIn()){
+        if(this.isUserLoggedIn()){
             Intent i = new Intent(_context, MainActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

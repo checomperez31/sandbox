@@ -91,7 +91,7 @@ public class RESTFragment extends Fragment implements InterfaceData{
                     Log.i("JSON", params + " " + JsonParams.toString());
                     Map<String, String> headers = new HashMap<String, String>();
                     headers.put("Content-type", "application/json");
-                    Comunicaciones com = new Comunicaciones(getContext());
+                    Comunicaciones com = new Comunicaciones(getActivity(), RESTFragment.this);
                     com.getSomethingJSON(Constants.url + Constants.autenticar,
                             Request.Method.POST,
                             new JSONObject(params),

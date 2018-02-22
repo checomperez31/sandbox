@@ -62,7 +62,7 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
                 Log.i("JSON", params + " " + JsonParams.toString());
                 Map<String, String> headers = new HashMap<String, String>();
                 headers.put("Content-type", "application/json");
-                Comunicaciones com = new Comunicaciones(getApplicationContext());
+                Comunicaciones com = new Comunicaciones(Login.this, Login.this);
                 com.getSomethingJSON(Constants.url + Constants.autenticar,
                         Request.Method.POST,
                         JsonParams,
@@ -83,7 +83,9 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
 
     @Override
     public void mostrarDatos(JSONObject datos) {
+        if(datos.has("id")){
 
+        }
     }
 
     @Override
@@ -95,7 +97,7 @@ public class Login extends AppCompatActivity implements InterfaceData, Interface
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-type", "application/json");
                 headers.put("Authorization", "Bearer " + VolleySingleton.getInstance(getApplicationContext()).getToken());
-                Comunicaciones com = new Comunicaciones(getApplicationContext());
+                Comunicaciones com = new Comunicaciones(Login.this, Login.this);
                 com.getSomethingString(Constants.url + Constants.userdata,
                         Request.Method.POST,
                         new JSONObject(),

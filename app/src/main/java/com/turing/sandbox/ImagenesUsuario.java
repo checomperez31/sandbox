@@ -165,7 +165,7 @@ public class ImagenesUsuario extends Fragment implements InterfaceData{
 
                     }
 
-                    Comunicaciones com = new Comunicaciones(getContext());
+                    Comunicaciones com = new Comunicaciones(getActivity(), ImagenesUsuario.this);
                     com.getSomethingJSON(
                             Constants.url + Constants.asistencia,
                             Request.Method.POST,

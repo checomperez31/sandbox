@@ -1,0 +1,22 @@
+ASISTENCIA
+***Checar que si se obtenga latitud y longitud
+***Errores de respuesta del servidor
+filtro en web fecha y usuario
+mapa al ver la asistencia
+campo de hora en la tabla
+orden(id, fecha, hora, usuario, ubicacion)
+generar pantalla en caso de que la asistencia se cumpla(ventana con datos de el registro ya hecho)
+quitar campo de hora en el registro de asistencia
+
+REGISTRO
+(Probable registro de usuarios)
+alert al no haber guardado las imagenes tomadas
+fecha y hora foto
+roles de usuarios
+
+***puntos finales en alertas
+footer y diseño parte web
+bloquear boton de tomar foto al presionarlo por 1era vez
+
+-operacion policial nombre asistencias
+-enrolar operacion policial

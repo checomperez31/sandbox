@@ -13,6 +13,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;*/
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +22,7 @@ import java.util.Map;
  * Created by smp_3 on 12/10/2017.
  */
 
-public class MapActivity extends AppCompatActivity
+public class MapActivity extends AppCompatActivity implements InterfaceData
 {
     //private MapView mapa;
     //private IMapController mapController;
@@ -113,7 +115,7 @@ public class MapActivity extends AppCompatActivity
          */
 
         ubicaciones = Ubicaciones.getInstance();
-        com = new Comunicaciones(getApplicationContext());
+        com = new Comunicaciones(MapActivity.this, MapActivity.this);
 
         ubicaciones.setDataChangeListener(new Ubicaciones.OnDataChangeListener() {
             @Override
@@ -155,5 +157,15 @@ public class MapActivity extends AppCompatActivity
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
         //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+    }
+
+    @Override
+    public void mostrarDatos(String datos) {
+
+    }
+
+    @Override
+    public void mostrarDatos(JSONObject datos) {
+
     }
 }
